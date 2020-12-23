@@ -10,7 +10,7 @@ terraform {
 
 // Change this resource name from "main" to "test" to simulate a refactor that
 // requires `terraform state mv` to avoid destroying and recreating the file
-resource "local_file" "main" {
+resource "local_file" "test" {
   content  = "example"
   filename = "${path.module}/example"
 }
