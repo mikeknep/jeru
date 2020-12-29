@@ -1,4 +1,4 @@
-module github.com/mikeknep/abmaj
+module github.com/mikeknep/jeru
 
 go 1.15
 

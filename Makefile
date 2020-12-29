@@ -1,2 +1,2 @@
 build:
-	go build -o out/abmaj *.go
+	go build -o out/jeru *.go
