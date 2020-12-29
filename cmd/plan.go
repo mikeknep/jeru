@@ -19,14 +19,20 @@ var planCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// create some temp files
-		statefile, err := ioutil.TempFile(os.TempDir(), "state-")
+		tempdir, err := ioutil.TempDir(".", ".jeru")
+		if err != nil {
+			return err
+		}
+		defer os.RemoveAll(tempdir)
+
+		statefile, err := ioutil.TempFile(tempdir, "state-")
 		if err != nil {
 			return err
 		}
 		defer statefile.Close()
 		defer os.Remove(statefile.Name())
 
-		changefile, err := ioutil.TempFile(os.TempDir(), "change-")
+		changefile, err := ioutil.TempFile(tempdir, "change-")
 		if err != nil {
 			return err
 		}
