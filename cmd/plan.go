@@ -75,7 +75,10 @@ var planCmd = &cobra.Command{
 		}
 
 		// // run plan against the modified state
-		planCommand := exec.Command("terraform", "plan", "-state", statefile.Name())
+		planArgs := []string{}
+		planArgs = append(planArgs, "plan", "-state", statefile.Name())
+		planArgs = append(planArgs, args...)
+		planCommand := exec.Command("terraform", planArgs...)
 		planCommand.Stdout = os.Stdout
 		planCommand.Stderr = os.Stderr
 		return planCommand.Run()
