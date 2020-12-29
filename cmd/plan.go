@@ -15,7 +15,7 @@ var changeScript string
 
 var planCmd = &cobra.Command{
 	Use:   "plan",
-	Short: "Plan some state changes",
+	Short: "Preview the terraform plan following proposed changes to state",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// create some temp files
