@@ -36,4 +36,5 @@ From the `example` directory, run:
 
 ## Developing Jeru
 
-Build Jeru via `make build` and call it via `./out/jeru`.
+- Build Jeru via `make build` and call it via `./out/jeru`.
+- Run the tests via `make test`.
