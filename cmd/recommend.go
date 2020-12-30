@@ -3,9 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 
 	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
@@ -25,28 +25,22 @@ var recommendCmd = &cobra.Command{
 		planfile := fmt.Sprintf("%s/planfile", tempdir)
 
 		// generate a planfile
-		planCommand := exec.Command("terraform", "plan", "-out", planfile)
-		planCommand.Stdout = nil
-		planCommand.Stderr = nil
-		err = planCommand.Run()
-		if err != nil {
+		planCommand := lib.Terraform([]string{"plan", "-out", planfile}, nil)
+		if err = planCommand.Run(); err != nil {
 			return err
 		}
 
 		// convert the planfile to json and decode into a Plan
+		reader, writer := io.Pipe()
+		showCommand := lib.Terraform([]string{"show", "-json", planfile}, writer)
+		if err = showCommand.Start(); err != nil {
+			return err
+		}
 		var plan lib.Plan
-		toJsonCommand := exec.Command("terraform", "show", "-json", planfile)
-		stdout, err := toJsonCommand.StdoutPipe()
-		if err != nil {
+		if err = json.NewDecoder(reader).Decode(&plan); err != nil {
 			return err
 		}
-		if err := toJsonCommand.Start(); err != nil {
-			return err
-		}
-		if err := json.NewDecoder(stdout).Decode(&plan); err != nil {
-			return err
-		}
-		if err := toJsonCommand.Wait(); err != nil {
+		if err = showCommand.Wait(); err != nil {
 			return err
 		}
 

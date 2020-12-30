@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
 )
 
@@ -40,11 +41,8 @@ var planCmd = &cobra.Command{
 		defer os.Remove(changefile.Name())
 
 		// make a copy of the current state
-		pullCommand := exec.Command("terraform", "state", "pull")
-		pullCommand.Stdout = statefile
-		pullCommand.Stderr = nil
-		err = pullCommand.Run()
-		if err != nil {
+		pullCommand := lib.Terraform([]string{"state", "pull"}, statefile)
+		if err = pullCommand.Run(); err != nil {
 			return err
 		}
 
@@ -59,8 +57,7 @@ var planCmd = &cobra.Command{
 			lines[i] = re.ReplaceAllString(line, fmt.Sprintf("$1 -state=%s", statefile.Name()))
 		}
 		out := strings.Join(lines, "\n")
-		err = ioutil.WriteFile(changefile.Name(), []byte(out), 0777)
-		if err != nil {
+		if err = ioutil.WriteFile(changefile.Name(), []byte(out), 0777); err != nil {
 			return err
 		}
 		os.Chmod(changefile.Name(), 0777)
@@ -75,12 +72,9 @@ var planCmd = &cobra.Command{
 		}
 
 		// // run plan against the modified state
-		planArgs := []string{}
-		planArgs = append(planArgs, "plan", "-state", statefile.Name())
+		planArgs := []string{"plan", "-state", statefile.Name()}
 		planArgs = append(planArgs, args...)
-		planCommand := exec.Command("terraform", planArgs...)
-		planCommand.Stdout = os.Stdout
-		planCommand.Stderr = os.Stderr
+		planCommand := lib.Terraform(planArgs, os.Stdout)
 		return planCommand.Run()
 	},
 }

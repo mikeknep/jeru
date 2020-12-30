@@ -1,6 +1,10 @@
 package lib
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"os/exec"
+)
 
 type Plan struct {
 	ChangingResources []ChangingResource `json:"resource_changes"`
@@ -31,4 +35,11 @@ func (pr PossibleRefactor) AsCommand() string {
 
 func (plan Plan) PossibleRefactors() []PossibleRefactor {
 	return []PossibleRefactor{}
+}
+
+func Terraform(args []string, stdout io.Writer) *exec.Cmd {
+	cmd := exec.Command("terraform", args...)
+	cmd.Stdout = stdout
+	cmd.Stderr = nil
+	return cmd
 }
