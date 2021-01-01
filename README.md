@@ -33,6 +33,27 @@ From the `example` directory, run:
 ../out/jeru plan --changes ./move.sh
 ```
 
+### Recommending possible refactors
+
+Jeru's `recommend` command suggests possible `terraform state mv` commands to run given the current `terraform plan`.
+
+This implementation is not particularly sophisticated yet.
+Currently, if multiple resources of the same type are being renamed, the output will be a Cartesian product,
+i.e. each resource being deleted will be matched with _each_ resource being created, instead of _exactly one_.
+Ideally Jeru would compare more attributes of the resources under change than simply provider and type, and try to find the "exact match,"
+or at the very least a set of commands that could be piped into `jeru plan`.
+
+#### example
+
+As mentioned above, the `local_file` resource in the `example` directory entrypoint has been renamed.
+Jeru will recognize this and recommend the appropriate `terraform state mv` command to run.
+(It is the same command "proposed" in `example/move.sh` and proven via `jeru plan` to lead to no changes to make.)
+
+From the `example` directory, run:
+```sh
+../out/jeru recommend
+```
+
 
 ## Developing Jeru
 
