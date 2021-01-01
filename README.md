@@ -25,7 +25,7 @@ jeru plan --changes ./proposed-state-commands.sh -- -var-file=foo
 The `example` directory provides a hypothetical Terraform entrypoint in an unclean state.
 The `local_file` resource had been created with the name `"main"`, but has been renamed `"test"`.
 A standard `terraform plan` run will show 1 to add and 1 to destroy.
-However, if we ran the `state` command in `example/move.sh`, a re-ran of `plan` should show no changes to make.
+However, if we ran the `state` command in `example/move.sh`, a re-run of `plan` should show no changes to make.
 
 Jeru proves this!
 From the `example` directory, run:
