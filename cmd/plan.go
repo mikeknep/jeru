@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
 )
@@ -46,6 +47,30 @@ var planCmd = &cobra.Command{
 			return err
 		}
 
+		// ensure the user comments out their configured backend, and reinitialize locally
+		fmt.Println("Comment out your backend, then enter 'yes' to continue.")
+		prompt := promptui.Prompt{
+			Label: "  Ready to proceed?",
+		}
+		response, err := prompt.Run()
+		if err != nil {
+			return err
+		}
+		if response != "yes" {
+			return nil
+		}
+
+		deleteDotTerraformDirCommand := exec.Command("rm", "-rf", ".terraform")
+		deleteDotTerraformDirCommand.Stdout = nil
+		deleteDotTerraformDirCommand.Stderr = nil
+		err = deleteDotTerraformDirCommand.Run()
+		if err != nil {
+			return err
+		}
+
+		initCommand := lib.Terraform([]string{"init"}, os.Stdout)
+		initCommand.Run()
+
 		// make a copy of the state changes script that targets the *copy* of the current state
 		input, err := ioutil.ReadFile(changeScript)
 		if err != nil {
@@ -75,7 +100,21 @@ var planCmd = &cobra.Command{
 		planArgs := []string{"plan", "-state", statefile.Name()}
 		planArgs = append(planArgs, args...)
 		planCommand := lib.Terraform(planArgs, os.Stdout)
-		return planCommand.Run()
+		err = planCommand.Run()
+		if err != nil {
+			return err
+		}
+
+		cleanupCommand := exec.Command("rm", "-rf", ".terraform")
+		cleanupCommand.Stdout = nil
+		cleanupCommand.Stderr = nil
+		err = cleanupCommand.Run()
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("Remember to restore your backend and re-initialize")
+		return nil
 	},
 }
 
