@@ -65,3 +65,29 @@ func parsePlanFile(path string) Plan {
 	json.Unmarshal(bytes, &plan)
 	return plan
 }
+
+func TestRollbackStateMv(t *testing.T) {
+	rollback := GenerateRollbackLine("terraform state mv module.a module.b")
+
+	require.Equal(t, "terraform state mv module.b module.a", rollback)
+}
+
+func TestRollbackImport(t *testing.T) {
+	rollback := GenerateRollbackLine("terraform import module.a identifier")
+
+	require.Equal(t, "terraform state rm module.a", rollback)
+}
+
+func TestRollbackStateRm(t *testing.T) {
+	rollback := GenerateRollbackLine("terraform state rm module.a")
+
+	require.Regexp(t, "^#", rollback)       // is a comment
+	require.Regexp(t, "module.a", rollback) // includes the address of the removed resource
+}
+
+func TestRollbackUnrecognizable(t *testing.T) {
+	rollback := GenerateRollbackLine("terraform plan")
+
+	require.Regexp(t, "^#", rollback)             // is a comment
+	require.Regexp(t, "terraform plan", rollback) // includes the original command
+}
