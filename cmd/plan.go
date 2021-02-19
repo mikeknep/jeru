@@ -83,7 +83,7 @@ var planCmd = &cobra.Command{
 		if err = ioutil.WriteFile(changefile.Name(), []byte(out), 0777); err != nil {
 			return err
 		}
-		os.Chmod(changefile.Name(), 0777)
+		changefile.Chmod(0777)
 
 		// execute that altered script
 		changeCommand := exec.Command(changefile.Name())
