@@ -66,28 +66,38 @@ func parsePlanFile(path string) Plan {
 	return plan
 }
 
-func TestRollbackStateMv(t *testing.T) {
-	rollback := GenerateRollbackLine("terraform state mv module.a module.b")
+func TestProperlyHandlesNoOpLines(t *testing.T) {
+	rollbackLines := []string{}
+	srcLines := []string{"#!/bin/bash\n", "\n", ""}
 
-	require.Equal(t, "terraform state mv module.b module.a", rollback)
+	for _, line := range srcLines {
+		AddRollbackLine(&rollbackLines, line)
+	}
+
+	require.Equal(t, []string{}, rollbackLines)
 }
 
-func TestRollbackImport(t *testing.T) {
-	rollback := GenerateRollbackLine("terraform import module.a identifier")
+func TestGeneratesRollbackLinesInReverseOrder(t *testing.T) {
+	rollbackLines := []string{}
+	srcLines := []string{
+		"terraform plan",
+		"terraform state rm module.a",
+		"terraform import module.a identifier",
+		"terraform state mv module.a module.b",
+	}
 
-	require.Equal(t, "terraform state rm module.a", rollback)
-}
+	for _, line := range srcLines {
+		AddRollbackLine(&rollbackLines, line)
+	}
 
-func TestRollbackStateRm(t *testing.T) {
-	rollback := GenerateRollbackLine("terraform state rm module.a")
+	require.Equal(t, "terraform state mv module.b module.a", rollbackLines[0])
+	require.Equal(t, "terraform state rm module.a", rollbackLines[1])
 
-	require.Regexp(t, "^#", rollback)       // is a comment
-	require.Regexp(t, "module.a", rollback) // includes the address of the removed resource
-}
+	// can't generate rollback for removals
+	require.Regexp(t, "^#", rollbackLines[2])       // is a comment
+	require.Regexp(t, "module.a", rollbackLines[2]) // includes the address of the removed resource for reference
 
-func TestRollbackUnrecognizable(t *testing.T) {
-	rollback := GenerateRollbackLine("terraform plan")
-
-	require.Regexp(t, "^#", rollback)             // is a comment
-	require.Regexp(t, "terraform plan", rollback) // includes the original command
+	// can't generate rollback for non-state command
+	require.Regexp(t, "^#", rollbackLines[3])             // is a comment
+	require.Regexp(t, "terraform plan", rollbackLines[3]) // includes the original command for reference
 }

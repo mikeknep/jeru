@@ -25,7 +25,7 @@ var rollbackCmd = &cobra.Command{
 		rollbackLines := []string{}
 		scanner := bufio.NewScanner(strings.NewReader(string(input)))
 		for scanner.Scan() {
-			rollbackLines = append([]string{scanner.Text()}, rollbackLines...)
+			lib.AddRollbackLine(&rollbackLines, scanner.Text())
 		}
 
 		rollbackFile, err := os.Create("./rollback.sh")
@@ -33,17 +33,12 @@ var rollbackCmd = &cobra.Command{
 			return err
 		}
 		defer rollbackFile.Close()
-		rollbackFile.WriteString("#! /bin/bash\n")
-		for _, line := range rollbackLines {
-			rollbackLine := lib.GenerateRollbackLine(line)
-			rollbackFile.WriteString(rollbackLine + "\n")
-		}
-		rollbackFile.Sync()
-
-		err = rollbackFile.Chmod(0777)
-		if err != nil {
+		rollbackLines = append([]string{"#! /bin/bash"}, rollbackLines...)
+		out := strings.Join(rollbackLines, "\n")
+		if err = ioutil.WriteFile(rollbackFile.Name(), []byte(out), 0777); err != nil {
 			return err
 		}
+		rollbackFile.Chmod(0777)
 
 		if dryRun {
 			return nil

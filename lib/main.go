@@ -79,7 +79,7 @@ func Terraform(args []string, stdout io.Writer) *exec.Cmd {
 	return cmd
 }
 
-func GenerateRollbackLine(line string) string {
+func generateRollbackLine(line string) string {
 	im := regexp.MustCompile(`terraform import (\S+) \S+`)
 	mv := regexp.MustCompile(`terraform state mv (\S+) (\S+)`)
 	rm := regexp.MustCompile(`terraform state rm (\S+)`)
@@ -94,4 +94,26 @@ func GenerateRollbackLine(line string) string {
 	default:
 		return fmt.Sprintf("# Could not generate rollback command for: %s", line)
 	}
+}
+
+func AddRollbackLine(rollbackLines *[]string, srcLine string) {
+	if isNoopLine(srcLine) {
+		return
+	}
+	rollbackLine := generateRollbackLine(srcLine)
+	*rollbackLines = append([]string{rollbackLine}, *rollbackLines...)
+}
+
+func isNoopLine(line string) bool {
+	return isEmpty(line) || isShebang(line)
+}
+
+func isEmpty(line string) bool {
+	matched, _ := regexp.MatchString(`^\s*$`, line)
+	return matched
+}
+
+func isShebang(line string) bool {
+	matched, _ := regexp.MatchString(`^#!`, line)
+	return matched
 }
