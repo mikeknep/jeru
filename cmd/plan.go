@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/mikeknep/jeru/io"
 	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
 )
@@ -70,16 +71,17 @@ var planCmd = &cobra.Command{
 		initCommand.Run()
 
 		// make a copy of the state changes script that targets the *copy* of the current state
-		input, err := ioutil.ReadFile(changeScript)
+		reader, err := io.ReadFile(changeScript)
 		if err != nil {
 			return err
 		}
-		lines := strings.Split(string(input), "\n")
 		re := regexp.MustCompile(`(terraform state (?:mv|rm))`)
-		for i, line := range lines {
-			lines[i] = re.ReplaceAllString(line, fmt.Sprintf("$1 -state=%s", statefile.Name()))
-		}
-		out := strings.Join(lines, "\n")
+		alteredLines := []string{}
+		err = reader.EachLine(func(line string) {
+			alt := re.ReplaceAllString(line, fmt.Sprintf("$1 -state=%s", statefile.Name()))
+			alteredLines = append(alteredLines, alt)
+		})
+		out := strings.Join(alteredLines, "\n")
 		if err = ioutil.WriteFile(changefile.Name(), []byte(out), 0777); err != nil {
 			return err
 		}

@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"bufio"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
 
+	"github.com/mikeknep/jeru/io"
 	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
 )
@@ -18,14 +18,23 @@ var rollbackCmd = &cobra.Command{
 	Short: "Revert a series of state changes",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		input, err := ioutil.ReadFile(changeScript)
+		reader, err := io.ReadFile(changeScript)
 		if err != nil {
 			return err
 		}
+
 		rollbackLines := []string{}
-		scanner := bufio.NewScanner(strings.NewReader(string(input)))
-		for scanner.Scan() {
-			lib.AddRollbackLine(&rollbackLines, scanner.Text())
+		err = reader.EachLine(func(line string) {
+			lib.AddRollbackLine(&rollbackLines, line)
+		})
+		if err != nil {
+			return err
+		}
+
+		io.DisplayIntent(rollbackLines, "Jeru has generated the following rollback commands:")
+
+		if dryRun {
+			return nil
 		}
 
 		rollbackFile, err := os.Create("./rollback.sh")
@@ -39,10 +48,6 @@ var rollbackCmd = &cobra.Command{
 			return err
 		}
 		rollbackFile.Chmod(0777)
-
-		if dryRun {
-			return nil
-		}
 
 		rollbackCommand := exec.Command(rollbackFile.Name())
 		rollbackCommand.Stdout = nil
