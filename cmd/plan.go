@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var changeScript string
-
 var planCmd = &cobra.Command{
 	Use:   "plan",
 	Short: "Preview the terraform plan following proposed changes to state",
