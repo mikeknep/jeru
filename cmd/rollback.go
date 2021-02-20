@@ -18,16 +18,10 @@ var rollbackCmd = &cobra.Command{
 	Short: "Revert a series of state changes",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		reader, err := io.ReadFile(changeScript)
-		if err != nil {
-			return err
-		}
-
 		rollbackLines := []string{}
-		err = reader.EachLine(func(line string) {
+		if err := io.ConsumeFileByLine(changeScript, func(line string) {
 			lib.AddRollbackLine(&rollbackLines, line)
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 

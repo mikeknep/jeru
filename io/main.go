@@ -7,28 +7,16 @@ import (
 	"strings"
 )
 
-type FileReader struct {
-	scanner *bufio.Scanner
-}
-
-func ReadFile(file string) (*FileReader, error) {
+func ConsumeFileByLine(file string, f func(string)) error {
 	input, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	fileReader := create(bufio.NewScanner(strings.NewReader(string(input))))
-	return &fileReader, nil
-}
-
-func (fr *FileReader) EachLine(f func(string)) error {
-	for fr.scanner.Scan() {
-		f(fr.scanner.Text())
+	scanner := bufio.NewScanner(strings.NewReader(string(input)))
+	for scanner.Scan() {
+		f(scanner.Text())
 	}
-	return fr.scanner.Err()
-}
-
-func create(scanner *bufio.Scanner) FileReader {
-	return FileReader{scanner}
+	return scanner.Err()
 }
 
 func DisplayIntent(lines []string, preliminaryText string) {

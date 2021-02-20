@@ -71,16 +71,14 @@ var planCmd = &cobra.Command{
 		initCommand.Run()
 
 		// make a copy of the state changes script that targets the *copy* of the current state
-		reader, err := io.ReadFile(changeScript)
-		if err != nil {
-			return err
-		}
 		re := regexp.MustCompile(`(terraform state (?:mv|rm))`)
 		alteredLines := []string{}
-		err = reader.EachLine(func(line string) {
+		if err := io.ConsumeFileByLine(changeScript, func(line string) {
 			alt := re.ReplaceAllString(line, fmt.Sprintf("$1 -state=%s", statefile.Name()))
 			alteredLines = append(alteredLines, alt)
-		})
+		}); err != nil {
+			return err
+		}
 		out := strings.Join(alteredLines, "\n")
 		if err = ioutil.WriteFile(changefile.Name(), []byte(out), 0777); err != nil {
 			return err
