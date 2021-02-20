@@ -7,6 +7,7 @@ import (
 )
 
 var dryRun bool
+var outfile string
 
 var rollbackCmd = &cobra.Command{
 	Use:   "rollback",
@@ -26,7 +27,8 @@ var rollbackCmd = &cobra.Command{
 			return nil
 		}
 
-		if err := io.WriteAndRun("./.jeru-rollback.sh", rollbackLines); err != nil {
+		filename, persist := parseOutfile(outfile)
+		if err := io.WriteAndRun(filename, rollbackLines, persist); err != nil {
 			return err
 		}
 
@@ -34,11 +36,20 @@ var rollbackCmd = &cobra.Command{
 	},
 }
 
+func parseOutfile(outfile string) (string, bool) {
+	if outfile == "" {
+		return "./.jeru-rollback.sh", false
+	} else {
+		return outfile, true
+	}
+}
+
 func init() {
 	rollbackCmd.Flags().StringVar(&changeScript, "changes", "", "A script containing the terraform state mv|rm changes to make")
 	rollbackCmd.MarkFlagRequired("changes")
 
-	rollbackCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Generate rollback script but do not execute it")
+	rollbackCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Generate rollback script but do not write or execute it. Supersedes --out.")
+	rollbackCmd.Flags().StringVar(&outfile, "out", "", "Write the rollback commands to the given path. For current directory, prefix with './' (e.g. './rollback.sh'). Conflicts (fails) with --dry-run.")
 
 	rootCmd.AddCommand(rollbackCmd)
 }

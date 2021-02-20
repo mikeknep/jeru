@@ -22,13 +22,15 @@ func ConsumeFileByLine(file string, f func(string)) error {
 	return scanner.Err()
 }
 
-func WriteAndRun(filename string, lines []string) error {
+func WriteAndRun(filename string, lines []string, persist bool) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	defer os.Remove(file.Name())
+	if !persist {
+		defer os.Remove(file.Name())
+	}
 
 	shebang := regexp.MustCompile(`^#!`)
 	if shebang.FindStringIndex(lines[0]) == nil {

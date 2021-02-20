@@ -72,7 +72,7 @@ var planCmd = &cobra.Command{
 			return err
 		}
 
-		if err := io.WriteAndRun("./.jeru-change.sh", alteredLines); err != nil {
+		if err := io.WriteAndRun("./.jeru-change.sh", alteredLines, false); err != nil {
 			return err
 		}
 
