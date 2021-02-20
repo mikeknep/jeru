@@ -1,11 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"strings"
-
 	"github.com/mikeknep/jeru/io"
 	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
@@ -31,23 +26,7 @@ var rollbackCmd = &cobra.Command{
 			return nil
 		}
 
-		rollbackFile, err := os.Create("./rollback.sh")
-		if err != nil {
-			return err
-		}
-		defer rollbackFile.Close()
-		rollbackLines = append([]string{"#! /bin/bash"}, rollbackLines...)
-		out := strings.Join(rollbackLines, "\n")
-		if err = ioutil.WriteFile(rollbackFile.Name(), []byte(out), 0777); err != nil {
-			return err
-		}
-		rollbackFile.Chmod(0777)
-
-		rollbackCommand := exec.Command(rollbackFile.Name())
-		rollbackCommand.Stdout = nil
-		rollbackCommand.Stderr = nil
-		err = rollbackCommand.Run()
-		if err != nil {
+		if err := io.WriteAndRun("./.jeru-rollback.sh", rollbackLines); err != nil {
 			return err
 		}
 

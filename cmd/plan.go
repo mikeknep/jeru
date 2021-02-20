@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/mikeknep/jeru/io"
@@ -32,13 +31,6 @@ var planCmd = &cobra.Command{
 		}
 		defer statefile.Close()
 		defer os.Remove(statefile.Name())
-
-		changefile, err := ioutil.TempFile(tempdir, "change-")
-		if err != nil {
-			return err
-		}
-		defer changefile.Close()
-		defer os.Remove(changefile.Name())
 
 		// make a copy of the current state
 		pullCommand := lib.Terraform([]string{"state", "pull"}, statefile)
@@ -79,18 +71,8 @@ var planCmd = &cobra.Command{
 		}); err != nil {
 			return err
 		}
-		out := strings.Join(alteredLines, "\n")
-		if err = ioutil.WriteFile(changefile.Name(), []byte(out), 0777); err != nil {
-			return err
-		}
-		changefile.Chmod(0777)
 
-		// execute that altered script
-		changeCommand := exec.Command(changefile.Name())
-		changeCommand.Stdout = nil
-		changeCommand.Stderr = nil
-		err = changeCommand.Run()
-		if err != nil {
+		if err := io.WriteAndRun("./.jeru-change.sh", alteredLines); err != nil {
 			return err
 		}
 
