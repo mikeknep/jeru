@@ -117,3 +117,11 @@ func isShebang(line string) bool {
 	matched, _ := regexp.MatchString(`^#!`, line)
 	return matched
 }
+
+func OrDefault(priority, defaultVal string) string {
+	if priority != "" {
+		return priority
+	} else {
+		return defaultVal
+	}
+}

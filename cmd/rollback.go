@@ -27,21 +27,14 @@ var rollbackCmd = &cobra.Command{
 			return nil
 		}
 
-		filename, persist := parseOutfile(outfile)
+		filename := lib.OrDefault(outfile, "./.jeru-rollback.sh")
+		persist := outfile != ""
 		if err := io.WriteAndRun(filename, rollbackLines, persist); err != nil {
 			return err
 		}
 
 		return nil
 	},
-}
-
-func parseOutfile(outfile string) (string, bool) {
-	if outfile == "" {
-		return "./.jeru-rollback.sh", false
-	} else {
-		return outfile, true
-	}
 }
 
 func init() {
