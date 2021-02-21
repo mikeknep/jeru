@@ -22,26 +22,16 @@ var rollbackCmd = &cobra.Command{
 		}
 		defer changes.Close()
 
-		rollbackLines := []string{}
-		err = lib.ConsumeByLine(changes, func(line string) {
-			lib.AddRollbackLine(&rollbackLines, line)
-		})
+		err = lib.Rollback(
+			changes,
+			dryRun,
+			outfile,
+			io.DisplayIntent,
+			io.WriteAndRun,
+		)
 		if err != nil {
 			return err
 		}
-
-		io.DisplayIntent(rollbackLines, "Jeru has generated the following rollback commands:")
-
-		if dryRun {
-			return nil
-		}
-
-		filename := lib.OrDefault(outfile, "./.jeru-rollback.sh")
-		persist := outfile != ""
-		if err := io.WriteAndRun(filename, rollbackLines, persist); err != nil {
-			return err
-		}
-
 		return nil
 	},
 }

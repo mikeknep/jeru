@@ -97,28 +97,6 @@ func generateRollbackLine(line string) string {
 	}
 }
 
-func AddRollbackLine(rollbackLines *[]string, srcLine string) {
-	if isNoopLine(srcLine) {
-		return
-	}
-	rollbackLine := generateRollbackLine(srcLine)
-	*rollbackLines = append([]string{rollbackLine}, *rollbackLines...)
-}
-
-func isNoopLine(line string) bool {
-	return isEmpty(line) || isShebang(line)
-}
-
-func isEmpty(line string) bool {
-	matched, _ := regexp.MatchString(`^\s*$`, line)
-	return matched
-}
-
-func isShebang(line string) bool {
-	matched, _ := regexp.MatchString(`^#!`, line)
-	return matched
-}
-
 func OrDefault(priority, defaultVal string) string {
 	if priority != "" {
 		return priority

@@ -67,17 +67,19 @@ func parsePlanFile(path string) Plan {
 	return plan
 }
 
+// TODO: replace with higher level test (addRollbackLine will be private)
 func TestProperlyHandlesNoOpLines(t *testing.T) {
 	rollbackLines := []string{}
 	srcLines := []string{"#!/bin/bash\n", "\n", ""}
 
 	for _, line := range srcLines {
-		AddRollbackLine(&rollbackLines, line)
+		addRollbackLine(&rollbackLines, line)
 	}
 
 	require.Equal(t, []string{}, rollbackLines)
 }
 
+// TODO: replace with higher level test (addRollbackLine will be private)
 func TestGeneratesRollbackLinesInReverseOrder(t *testing.T) {
 	rollbackLines := []string{}
 	srcLines := []string{
@@ -88,7 +90,7 @@ func TestGeneratesRollbackLinesInReverseOrder(t *testing.T) {
 	}
 
 	for _, line := range srcLines {
-		AddRollbackLine(&rollbackLines, line)
+		addRollbackLine(&rollbackLines, line)
 	}
 
 	require.Equal(t, "terraform state mv module.b module.a", rollbackLines[0])
