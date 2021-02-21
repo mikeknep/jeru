@@ -66,10 +66,10 @@ var planCmd = &cobra.Command{
 		re := regexp.MustCompile(`(terraform state (?:mv|rm))`)
 		alteredLines := []string{}
 		changes, err := os.Open(changeScript)
-		defer changes.Close()
 		if err != nil {
 			return err
 		}
+		defer changes.Close()
 		err = lib.ConsumeByLine(changes, func(line string) {
 			alt := re.ReplaceAllString(line, fmt.Sprintf("$1 -state=%s", statefile.Name()))
 			alteredLines = append(alteredLines, alt)

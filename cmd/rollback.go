@@ -17,10 +17,10 @@ var rollbackCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		changes, err := os.Open(changeScript)
-		defer changes.Close()
 		if err != nil {
 			return err
 		}
+		defer changes.Close()
 
 		rollbackLines := []string{}
 		err = lib.ConsumeByLine(changes, func(line string) {
