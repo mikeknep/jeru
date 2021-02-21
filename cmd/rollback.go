@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/mikeknep/jeru/io"
 	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
@@ -14,10 +16,17 @@ var rollbackCmd = &cobra.Command{
 	Short: "Revert a series of state changes",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+		changes, err := os.Open(changeScript)
+		defer changes.Close()
+		if err != nil {
+			return err
+		}
+
 		rollbackLines := []string{}
-		if err := io.ConsumeFileByLine(changeScript, func(line string) {
+		err = lib.ConsumeByLine(changes, func(line string) {
 			lib.AddRollbackLine(&rollbackLines, line)
-		}); err != nil {
+		})
+		if err != nil {
 			return err
 		}
 

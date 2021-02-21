@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os/exec"
@@ -124,4 +125,12 @@ func OrDefault(priority, defaultVal string) string {
 	} else {
 		return defaultVal
 	}
+}
+
+func ConsumeByLine(reader io.Reader, f func(string)) error {
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		f(scanner.Text())
+	}
+	return scanner.Err()
 }

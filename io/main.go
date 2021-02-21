@@ -1,7 +1,6 @@
 package io
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,18 +8,6 @@ import (
 	"regexp"
 	"strings"
 )
-
-func ConsumeFileByLine(file string, f func(string)) error {
-	input, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
-	}
-	scanner := bufio.NewScanner(strings.NewReader(string(input)))
-	for scanner.Scan() {
-		f(scanner.Text())
-	}
-	return scanner.Err()
-}
 
 func WriteAndRun(filename string, lines []string, persist bool) error {
 	file, err := os.Create(filename)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -100,4 +101,17 @@ func TestGeneratesRollbackLinesInReverseOrder(t *testing.T) {
 	// can't generate rollback for non-state command
 	require.Regexp(t, "^#", rollbackLines[3])             // is a comment
 	require.Regexp(t, "terraform plan", rollbackLines[3]) // includes the original command for reference
+}
+
+func TestActingOnReaderLines(t *testing.T) {
+	lines := `one
+two
+three`
+
+	lengths := []int{}
+	ConsumeByLine(strings.NewReader(lines), func(line string) {
+		lengths = append(lengths, len(line))
+	})
+
+	require.Equal(t, []int{3, 3, 5}, lengths)
 }
