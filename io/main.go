@@ -41,8 +41,8 @@ func WriteAndRun(filename string, lines []string, persist bool) error {
 	return nil
 }
 
-func DisplayIntent(lines []string, preliminaryText string) {
-	fmt.Println(preliminaryText + "\n")
+func DisplayIntent(intro string, lines []string) {
+	fmt.Println(intro + "\n")
 	for _, line := range lines {
 		fmt.Println("\t" + line)
 	}

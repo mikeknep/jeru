@@ -5,11 +5,13 @@ import (
 	"regexp"
 )
 
+const presentIntro = "Jeru has generated the following rollback commands:"
+
 func Rollback(
 	changes io.Reader,
 	dryRun bool,
 	outfile string,
-	presenter func(lines []string, msg string),
+	present func(intro string, lines []string),
 	writerRunner func(filename string, lines []string, persist bool) error,
 ) error {
 
@@ -21,7 +23,7 @@ func Rollback(
 		return err
 	}
 
-	presenter(rollbackLines, "Jeru has generated the following rollback commands:")
+	present(presentIntro, rollbackLines)
 
 	if dryRun {
 		return nil
