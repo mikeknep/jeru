@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/mikeknep/jeru/lib"
 )
 
 func WriteAndRun(filename string, lines []string, persist bool) error {
@@ -39,6 +41,23 @@ func WriteAndRun(filename string, lines []string, persist bool) error {
 	}
 
 	return nil
+}
+
+func Run(filename string) error {
+	fileCommand := exec.Command(filename)
+	fileCommand.Stdout = nil
+	fileCommand.Stderr = nil
+	return fileCommand.Run()
+}
+
+func CreateScript(filename string) (*lib.Script, error) {
+	file, err := os.Create(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	file.Chmod(0777)
+	return &lib.Script{Name: filename, W: file}, nil
 }
 
 func DisplayIntent(intro string, lines []string) {

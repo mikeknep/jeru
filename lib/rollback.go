@@ -9,10 +9,9 @@ const presentIntro = "Jeru has generated the following rollback commands:"
 
 func Rollback(
 	changes io.Reader,
-	dryRun bool,
-	outfile string,
+	script *Script,
 	present func(intro string, lines []string),
-	writerRunner func(filename string, lines []string, persist bool) error,
+	run func(filename string) error,
 ) error {
 
 	rollbackLines := []string{}
@@ -25,18 +24,12 @@ func Rollback(
 
 	present(presentIntro, rollbackLines)
 
-	if dryRun {
-		return nil
-	}
-
-	filename := OrDefault(outfile, "./.jeru-rollback.sh")
-	persist := outfile != ""
-	err = writerRunner(filename, rollbackLines, persist)
+	err = WriteExecutable(script.W, rollbackLines)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return run(script.Name)
 }
 
 func addRollbackLine(rollbackLines *[]string, srcLine string) {

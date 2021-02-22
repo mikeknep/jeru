@@ -22,17 +22,28 @@ var rollbackCmd = &cobra.Command{
 		}
 		defer changes.Close()
 
-		err = lib.Rollback(
-			changes,
-			dryRun,
-			outfile,
-			io.DisplayIntent,
-			io.WriteAndRun,
-		)
+		rollbackFilename := lib.OrDefault(outfile, "./.jeru-rollback.sh")
+		rollbackScript, err := io.CreateScript(rollbackFilename)
 		if err != nil {
 			return err
 		}
-		return nil
+		if outfile == "" {
+			defer os.Remove(rollbackScript.Name)
+		}
+
+		var run func(_ string) error
+		if dryRun {
+			run = lib.DryRun
+		} else {
+			run = io.Run
+		}
+
+		return lib.Rollback(
+			changes,
+			rollbackScript,
+			io.DisplayIntent,
+			run,
+		)
 	},
 }
 

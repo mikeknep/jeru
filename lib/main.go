@@ -6,6 +6,7 @@ import (
 	"io"
 	"os/exec"
 	"regexp"
+	"strings"
 )
 
 type Plan struct {
@@ -111,4 +112,27 @@ func ConsumeByLine(reader io.Reader, f func(string)) error {
 		f(scanner.Text())
 	}
 	return scanner.Err()
+}
+
+type Script struct {
+	Name string
+	W    io.Writer
+}
+
+func WriteExecutable(w io.Writer, lines []string) error {
+	shebang := regexp.MustCompile(`^#!`)
+	if shebang.FindStringIndex(lines[0]) == nil {
+		lines = append([]string{"#! /bin/bash"}, lines...)
+	}
+
+	out := strings.Join(lines, "\n")
+	_, err := w.Write([]byte(out))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DryRun(_ string) error {
+	return nil
 }
