@@ -14,9 +14,10 @@ var outfile string
 var rollbackCmd = &cobra.Command{
 	Use:   "rollback",
 	Short: "Revert a series of state changes",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		changes, err := os.Open(changeScript)
+		changes, err := os.Open(args[0])
 		if err != nil {
 			return err
 		}
@@ -44,11 +45,8 @@ var rollbackCmd = &cobra.Command{
 }
 
 func init() {
-	rollbackCmd.Flags().StringVar(&changeScript, "changes", "", "A script containing the terraform state mv|rm changes to make")
-	rollbackCmd.MarkFlagRequired("changes")
-
-	rollbackCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Generate rollback script but do not write or execute it. Supersedes --out.")
-	rollbackCmd.Flags().StringVar(&outfile, "out", "", "Write the rollback commands to the given path. For current directory, prefix with './' (e.g. './rollback.sh'). Conflicts (fails) with --dry-run.")
+	rollbackCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Generate rollback script but do not write or execute it.")
+	rollbackCmd.Flags().StringVar(&outfile, "out", "", "Write the rollback commands to the given path. For current directory, prefix with './' (e.g. './rollback.sh').")
 
 	rootCmd.AddCommand(rollbackCmd)
 }
