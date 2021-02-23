@@ -17,20 +17,20 @@ Jeru makes a copy of the current state, applies your proposed/WIP `state` comman
 Additional flags for `terraform plan` can be passed through Jeru following a double-dash (`--`).
 
 ```sh
-jeru plan --changes ./proposed-state-commands.sh -- -var-file=foo
+jeru plan ./proposed-state-commands.sh -- -var-file staging.tfvars
 ```
 
-#### example
+### Rolling back state changes
 
-The `example` directory provides a hypothetical Terraform entrypoint in an unclean state.
-The `local_file` resource had been created with the name `"main"`, but has been renamed `"test"`.
-A standard `terraform plan` run will show 1 to add and 1 to destroy.
-However, if we ran the `state` command in `example/move.sh`, a re-run of `plan` should show no changes to make.
+Even when you plan, mistakes happen.
+Often times when prepping `state` commands, I don't pay attention to what I'd need to run to roll back those changes.
+Jeru's `rollback` command generates the inverse for as many commands as it can:
+- `state mv resource.a resource.b  =>  state mv resource.b resource.a` (restore the original resource address)
+- `import resource.a identifier  =>  state rm resource.a` (remove the imported resource from state)
+- `rm resource.a  =>  :(` (alas, since resources are imported with such specific identifiers that are not always stored in state, Jeru does not attempt to roll back removals)
 
-Jeru proves this!
-From the `example` directory, run:
 ```sh
-../out/jeru plan --changes ./move.sh
+jeru rollback ./proposed-state-commands.sh
 ```
 
 ### Recommending possible refactors
@@ -43,16 +43,35 @@ i.e. each resource being deleted will be matched with _each_ resource being crea
 Ideally Jeru would compare more attributes of the resources under change than simply provider and type, and try to find the "exact match,"
 or at the very least a set of commands that could be piped into `jeru plan`.
 
-#### example
 
-As mentioned above, the `local_file` resource in the `example` directory entrypoint has been renamed.
-Jeru will recognize this and recommend the appropriate `terraform state mv` command to run.
-(It is the same command "proposed" in `example/move.sh` and proven via `jeru plan` to lead to no changes to make.)
+## Examples
 
-From the `example` directory, run:
+The `example` directory provides a hypothetical Terraform entrypoint in an "unclean" state.
+The `local_file` resource had been created with the address `"main"`, but has since been renamed `"test"`.
+A standard `terraform plan` shows 1 to add and 1 to destroy.
+
+First, Jeru can suggest some commands to run that may help:
 ```sh
-../out/jeru recommend
+../out/jeru recommend --out ./move.sh
 ```
+(Note: the `move.sh` file is already checked in to this repo.)
+
+If we ran the `state` command in the `move.sh` script, a subsequent re-run of `terraform plan` would report no changes to make, infrastructure up to date.
+Jeru safely proves this in advance, before we change our actual state:
+```sh
+../out/jeru plan ./move.sh
+```
+
+OK, let's run `./move.sh`.
+Sure enough, a subsequent `terraform plan` now reports no changes to make... but maybe we don't like that name after all and want to keep the file addressed at `"main"`.
+We can change the address back in `main.tf` easily enough (perhaps via `git restore|revert`) and repeat the process above to create a new script of `state mv` commands to run,
+or we could have Jeru reverse the changes we just made for us.
+Jeru generates and executes a rollback script based on the original change script:
+```sh
+../out/jeru rollback ./move.sh --out ./rollback.sh
+```
+(Note: assuming `main.tf` isn't actually changed and you're just running the commands here,
+this brings everything in `example/` back to the original "unclean" demo state, i.e. with 1 to add and 1 to destroy.)
 
 
 ## Developing Jeru
