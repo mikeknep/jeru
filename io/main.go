@@ -50,14 +50,13 @@ func Run(filename string) error {
 	return fileCommand.Run()
 }
 
-func CreateScript(filename string) (*lib.Script, error) {
+func CreateScript(filename string) (*lib.Script, *os.File, error) {
 	file, err := os.Create(filename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	defer file.Close()
 	file.Chmod(0777)
-	return &lib.Script{Name: filename, W: file}, nil
+	return &lib.Script{Name: filename, W: file}, file, nil
 }
 
 func DisplayIntent(intro string, lines []string) {

@@ -23,10 +23,11 @@ var rollbackCmd = &cobra.Command{
 		defer changes.Close()
 
 		rollbackFilename := lib.OrDefault(outfile, "./.jeru-rollback.sh")
-		rollbackScript, err := io.CreateScript(rollbackFilename)
+		rollbackScript, file, err := io.CreateScript(rollbackFilename)
 		if err != nil {
 			return err
 		}
+		defer file.Close()
 		if outfile == "" {
 			defer os.Remove(rollbackScript.Name)
 		}
