@@ -38,12 +38,7 @@ var rollbackCmd = &cobra.Command{
 			run = io.Run
 		}
 
-		return lib.Rollback(
-			changes,
-			rollbackScript,
-			io.DisplayIntent,
-			run,
-		)
+		return lib.Rollback(changes, rollbackScript, io.DisplayIntent, run)
 	},
 }
 

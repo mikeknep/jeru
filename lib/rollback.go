@@ -10,8 +10,8 @@ const presentIntro = "Jeru has generated the following rollback commands:"
 func Rollback(
 	changes io.Reader,
 	script *Script,
-	present func(intro string, lines []string),
-	run func(filename string) error,
+	present func(string, []string),
+	run func(string) error,
 ) error {
 
 	rollbackLines := []string{}
@@ -24,7 +24,7 @@ func Rollback(
 
 	present(presentIntro, rollbackLines)
 
-	err = WriteExecutable(script.W, rollbackLines)
+	err = writeExecutable(script.W, rollbackLines)
 	if err != nil {
 		return err
 	}

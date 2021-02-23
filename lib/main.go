@@ -119,7 +119,7 @@ type Script struct {
 	W    io.Writer
 }
 
-func WriteExecutable(w io.Writer, lines []string) error {
+func writeExecutable(w io.Writer, lines []string) error {
 	shebang := regexp.MustCompile(`^#!`)
 	if shebang.FindStringIndex(lines[0]) == nil {
 		lines = append([]string{"#! /bin/bash"}, lines...)
