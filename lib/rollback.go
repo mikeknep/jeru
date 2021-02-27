@@ -66,6 +66,23 @@ func addRollbackLine(rollbackLines *[]string, srcLine string) {
 	*rollbackLines = append([]string{rollbackLine}, *rollbackLines...)
 }
 
+func generateRollbackLine(line string) string {
+	im := regexp.MustCompile(`terraform import (\S+) \S+`)
+	mv := regexp.MustCompile(`terraform state mv (\S+) (\S+)`)
+	rm := regexp.MustCompile(`terraform state rm (\S+)`)
+
+	switch {
+	case im.FindStringIndex(line) != nil:
+		return im.ReplaceAllString(line, fmt.Sprintf("terraform state rm $1"))
+	case mv.FindStringIndex(line) != nil:
+		return mv.ReplaceAllString(line, fmt.Sprintf("terraform state mv $2 $1"))
+	case rm.FindStringIndex(line) != nil:
+		return rm.ReplaceAllString(line, fmt.Sprintf("# terraform import $1 ___"))
+	default:
+		return fmt.Sprintf("# Could not generate rollback command for: %s", line)
+	}
+}
+
 func isNoopLine(line string) bool {
 	return isEmpty(line) || isShebang(line)
 }
