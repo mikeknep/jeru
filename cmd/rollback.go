@@ -1,15 +1,22 @@
 package cmd
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
 
-	"github.com/mikeknep/jeru/io"
+	"github.com/manifoldco/promptui"
 	"github.com/mikeknep/jeru/lib"
 	"github.com/spf13/cobra"
 )
 
+var autoApprove bool
 var dryRun bool
-var outfile string
+var out string
+
+const getApprovalText = "\nDo you want to perform these actions? Only 'yes' will be accepted."
+const labelText = "\tEnter a value"
 
 var rollbackCmd = &cobra.Command{
 	Use:   "rollback",
@@ -23,30 +30,49 @@ var rollbackCmd = &cobra.Command{
 		}
 		defer changes.Close()
 
-		rollbackFilename := lib.OrDefault(outfile, "./.jeru-rollback.sh")
-		rollbackScript, file, err := io.CreateScript(rollbackFilename)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		if outfile == "" {
-			defer os.Remove(rollbackScript.Name)
-		}
-
-		var run func(_ string) error
-		if dryRun {
-			run = lib.DryRun
-		} else {
-			run = io.Run
+		var outfile = ioutil.Discard
+		if out != "" {
+			outfile, err := os.Create(out)
+			if err != nil {
+				return err
+			}
+			defer outfile.Close()
 		}
 
-		return lib.Rollback(changes, rollbackScript, io.DisplayIntent, run)
+		getApproval := func() (bool, error) {
+			if autoApprove {
+				return true, nil
+			}
+			return getApprovalFromPrompt()
+		}
+
+		execute := func(name string, arg ...string) error {
+			if dryRun {
+				return nil
+			}
+			return exec.Command(name, arg...).Run()
+		}
+
+		return lib.Rollback(changes, os.Stdout, outfile, getApproval, execute)
 	},
 }
 
+func getApprovalFromPrompt() (bool, error) {
+	fmt.Println(getApprovalText)
+	prompt := promptui.Prompt{
+		Label: labelText,
+	}
+	input, err := prompt.Run()
+	if err != nil {
+		return false, err
+	}
+	return input == "yes", nil
+}
+
 func init() {
+	rollbackCmd.Flags().BoolVar(&autoApprove, "auto-approve", false, "Apply the rollback script without asking for approval.")
 	rollbackCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Generate rollback script but do not write or execute it.")
-	rollbackCmd.Flags().StringVar(&outfile, "out", "", "Write the rollback commands to the given path. For current directory, prefix with './' (e.g. './rollback.sh').")
+	rollbackCmd.Flags().StringVar(&out, "out", "", "Write the rollback commands to the given path. For current directory, prefix with './' (e.g. './rollback.sh').")
 
 	rootCmd.AddCommand(rollbackCmd)
 }

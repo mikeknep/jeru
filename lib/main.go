@@ -132,7 +132,3 @@ func writeExecutable(w io.Writer, lines []string) error {
 	}
 	return nil
 }
-
-func DryRun(_ string) error {
-	return nil
-}

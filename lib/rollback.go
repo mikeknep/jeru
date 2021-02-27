@@ -1,19 +1,23 @@
 package lib
 
 import (
+	"fmt"
 	"io"
 	"regexp"
+	"strings"
 )
 
-const presentIntro = "Jeru has generated the following rollback commands:"
+const introText = "Jeru has generated the following rollback commands:\n"
 
 func Rollback(
 	changes io.Reader,
-	script *Script,
-	present func(string, []string),
-	run func(string) error,
+	screen io.Writer,
+	outfile io.Writer,
+	getApproval func() (bool, error),
+	execute func(string, ...string) error,
 ) error {
 
+	// Generate rollback lines for the source changes
 	rollbackLines := []string{}
 	err := ConsumeByLine(changes, func(line string) {
 		addRollbackLine(&rollbackLines, line)
@@ -22,14 +26,36 @@ func Rollback(
 		return err
 	}
 
-	present(presentIntro, rollbackLines)
+	// Show the user what was generated
+	fmt.Fprintln(screen, introText)
+	for _, line := range rollbackLines {
+		fmt.Fprintln(screen, "\t"+line)
+	}
 
-	err = writeExecutable(script.W, rollbackLines)
+	// Write the generated lines to the outfile
+	out := strings.Join(rollbackLines, "\n")
+	_, err = outfile.Write([]byte(out))
 	if err != nil {
 		return err
 	}
 
-	return run(script.Name)
+	// Exit if user does not approve changes
+	approved, err := getApproval()
+	if err != nil {
+		return err
+	}
+	if !approved {
+		return nil
+	}
+
+	// Execute the changes
+	for _, line := range rollbackLines {
+		err = execute("bash", "-c", line)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func addRollbackLine(rollbackLines *[]string, srcLine string) {

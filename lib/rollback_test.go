@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -12,33 +14,60 @@ var (
 	mv = "terraform state mv module.a module.b"
 	im = "terraform import resource.a id"
 
-	noPresent = func(string, []string) { return }
-	noRun     = func(string) error { return nil }
+	rollbackMv = "terraform state mv module.b module.a"
+	rollbackIm = "terraform state rm resource.a"
+
+	changes = func() io.Reader { return strings.NewReader(mv + "\n" + im) }
+
+	approve   = func() (bool, error) { return true, nil }
+	unapprove = func() (bool, error) { return false, nil }
+
+	execute = func(string, ...string) error { return nil }
 )
 
-func TestRollbackWritesGeneratedRollbackLinesToScriptInReverseOrder(t *testing.T) {
-	changes := strings.NewReader(strings.Join([]string{mv, im}, "\n"))
-	var builder strings.Builder
-	script := Script{Name: "", W: &builder}
-
-	Rollback(changes, &script, noPresent, noRun)
-
-	expectedRollback := `#! /bin/bash
-terraform state rm resource.a
-terraform state mv module.b module.a`
-	require.Equal(t, expectedRollback, builder.String())
-}
-
-func TestRollbackExecutesScriptUsingRunFunc(t *testing.T) {
-	script := Script{Name: "Rollback", W: ioutil.Discard} // this moves from ioutil to io in Go 1.16
-
-	executedScript := ""
-	spyRun := func(name string) error {
-		executedScript = name
+func spyExecute() (*strings.Builder, func(string, ...string) error) {
+	var executedCommands strings.Builder
+	return &executedCommands, func(command string, args ...string) error {
+		fullCommand := command + " " + strings.Join(args, " ")
+		executedCommands.Write([]byte(fullCommand))
 		return nil
 	}
+}
 
-	Rollback(strings.NewReader(mv), &script, noPresent, spyRun)
+func TestPrintsGeneratedRollbackLinesToTheScreen(t *testing.T) {
+	var screen strings.Builder
 
-	require.Equal(t, "Rollback", executedScript)
+	Rollback(changes(), &screen, ioutil.Discard, approve, execute)
+
+	expectedScreenContent := fmt.Sprintf(`%s
+	%s
+	%s
+`, introText, rollbackIm, rollbackMv)
+	require.Equal(t, expectedScreenContent, screen.String())
+}
+
+func TestWritesGeneratedRollbackLinesToTheOutfile(t *testing.T) {
+	var outfile strings.Builder
+
+	Rollback(changes(), ioutil.Discard, &outfile, approve, execute)
+
+	expectedOutfileContent := rollbackIm + "\n" + rollbackMv
+	require.Equal(t, expectedOutfileContent, outfile.String())
+}
+
+func TestExitsWithoutExecutingIfUserDoesNotApprove(t *testing.T) {
+	executedCommands, execute := spyExecute()
+
+	Rollback(changes(), ioutil.Discard, ioutil.Discard, unapprove, execute)
+
+	require.Equal(t, "", executedCommands.String())
+}
+
+func TestExecutesRollbackLinesIfUserApproves(t *testing.T) {
+	executedCommands, execute := spyExecute()
+
+	Rollback(changes(), ioutil.Discard, ioutil.Discard, approve, execute)
+
+	expectedExecution := "bash -c " + rollbackIm + "bash -c " + rollbackMv
+	require.Equal(t, expectedExecution, executedCommands.String())
 }
