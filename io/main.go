@@ -1,14 +1,11 @@
 package io
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
 	"strings"
-
-	"github.com/mikeknep/jeru/lib"
 )
 
 func WriteAndRun(filename string, lines []string, persist bool) error {
@@ -41,27 +38,4 @@ func WriteAndRun(filename string, lines []string, persist bool) error {
 	}
 
 	return nil
-}
-
-func Run(filename string) error {
-	fileCommand := exec.Command(filename)
-	fileCommand.Stdout = nil
-	fileCommand.Stderr = nil
-	return fileCommand.Run()
-}
-
-func CreateScript(filename string) (*lib.Script, *os.File, error) {
-	file, err := os.Create(filename)
-	if err != nil {
-		return nil, nil, err
-	}
-	file.Chmod(0777)
-	return &lib.Script{Name: filename, W: file}, file, nil
-}
-
-func DisplayIntent(intro string, lines []string) {
-	fmt.Println(intro + "\n")
-	for _, line := range lines {
-		fmt.Println("\t" + line)
-	}
 }

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"regexp"
-	"strings"
 )
 
 type Plan struct {
@@ -81,37 +79,10 @@ func Terraform(args []string, stdout io.Writer) *exec.Cmd {
 	return cmd
 }
 
-func OrDefault(priority, defaultVal string) string {
-	if priority != "" {
-		return priority
-	} else {
-		return defaultVal
-	}
-}
-
 func ConsumeByLine(reader io.Reader, f func(string)) error {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		f(scanner.Text())
 	}
 	return scanner.Err()
-}
-
-type Script struct {
-	Name string
-	W    io.Writer
-}
-
-func writeExecutable(w io.Writer, lines []string) error {
-	shebang := regexp.MustCompile(`^#!`)
-	if shebang.FindStringIndex(lines[0]) == nil {
-		lines = append([]string{"#! /bin/bash"}, lines...)
-	}
-
-	out := strings.Join(lines, "\n")
-	_, err := w.Write([]byte(out))
-	if err != nil {
-		return err
-	}
-	return nil
 }
