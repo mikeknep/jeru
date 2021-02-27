@@ -41,6 +41,9 @@ var rollbackCmd = &cobra.Command{
 		}
 
 		getApproval := func() (bool, error) {
+			if dryRun {
+				return false, nil
+			}
 			if autoApprove {
 				return true, nil
 			}
