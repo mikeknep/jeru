@@ -32,11 +32,12 @@ var rollbackCmd = &cobra.Command{
 
 		var outfile = ioutil.Discard
 		if out != "" {
-			outfile, err := os.Create(out)
+			file, err := os.Create(out)
 			if err != nil {
 				return err
 			}
-			defer outfile.Close()
+			defer file.Close()
+			outfile = file
 		}
 
 		getApproval := func() (bool, error) {
