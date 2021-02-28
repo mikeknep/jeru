@@ -34,7 +34,7 @@ func spyExecute() (*strings.Builder, func(string, ...string) error) {
 	}
 }
 
-func TestPrintsGeneratedRollbackLinesToTheScreen(t *testing.T) {
+func TestPrintsGeneratedRollbackLinesToTheScreenAndAsksForApproval(t *testing.T) {
 	var screen strings.Builder
 
 	Rollback(changes(), &screen, ioutil.Discard, approve, execute)
@@ -42,7 +42,8 @@ func TestPrintsGeneratedRollbackLinesToTheScreen(t *testing.T) {
 	expectedScreenContent := fmt.Sprintf(`%s
 	%s
 	%s
-`, introText, rollbackIm, rollbackMv)
+%s
+`, introText, rollbackIm, rollbackMv, performTheseActionsText)
 	require.Equal(t, expectedScreenContent, screen.String())
 }
 

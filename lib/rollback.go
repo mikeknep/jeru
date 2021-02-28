@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+const performTheseActionsText = "\nDo you want to perform these actions? Only 'yes' will be accepted."
 const introText = "Jeru has generated the following rollback commands:\n"
 
 func Rollback(
@@ -40,6 +41,7 @@ func Rollback(
 	}
 
 	// Exit if user does not approve changes
+	fmt.Fprintln(screen, performTheseActionsText)
 	approved, err := getApproval()
 	if err != nil {
 		return err

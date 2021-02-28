@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,7 +14,6 @@ var autoApprove bool
 var dryRun bool
 var out string
 
-const getApprovalText = "\nDo you want to perform these actions? Only 'yes' will be accepted."
 const labelText = "\tEnter a value"
 
 var rollbackCmd = &cobra.Command{
@@ -62,7 +60,6 @@ var rollbackCmd = &cobra.Command{
 }
 
 func getApprovalFromPrompt() (bool, error) {
-	fmt.Println(getApprovalText)
 	prompt := promptui.Prompt{
 		Label: labelText,
 	}
