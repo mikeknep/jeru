@@ -11,16 +11,10 @@ import (
 )
 
 var (
-	mv = "terraform state mv module.a module.b"
-	im = "terraform import resource.a id"
+	buildRollbackChanges = func() io.Reader { return strings.NewReader(mv + "\n" + im) }
 
 	rollbackMv = "terraform state mv module.b module.a"
 	rollbackIm = "terraform state rm resource.a"
-
-	changes = func() io.Reader { return strings.NewReader(mv + "\n" + im) }
-
-	approve   = func() (bool, error) { return true, nil }
-	unapprove = func() (bool, error) { return false, nil }
 
 	execute = func(string, ...string) error { return nil }
 )
@@ -37,7 +31,7 @@ func spyExecute() (*strings.Builder, func(string, ...string) error) {
 func TestPrintsGeneratedRollbackLinesToTheScreenAndAsksForApproval(t *testing.T) {
 	var screen strings.Builder
 
-	Rollback(changes(), &screen, ioutil.Discard, approve, execute)
+	Rollback(buildRollbackChanges(), &screen, ioutil.Discard, approve, execute)
 
 	expectedScreenContent := fmt.Sprintf(`%s
 	%s
@@ -50,7 +44,7 @@ func TestPrintsGeneratedRollbackLinesToTheScreenAndAsksForApproval(t *testing.T)
 func TestWritesGeneratedRollbackLinesToTheOutfile(t *testing.T) {
 	var outfile strings.Builder
 
-	Rollback(changes(), ioutil.Discard, &outfile, approve, execute)
+	Rollback(buildRollbackChanges(), ioutil.Discard, &outfile, approve, execute)
 
 	expectedOutfileContent := rollbackIm + "\n" + rollbackMv
 	require.Equal(t, expectedOutfileContent, outfile.String())
@@ -59,7 +53,7 @@ func TestWritesGeneratedRollbackLinesToTheOutfile(t *testing.T) {
 func TestExitsWithoutExecutingIfUserDoesNotApprove(t *testing.T) {
 	executedCommands, execute := spyExecute()
 
-	Rollback(changes(), ioutil.Discard, ioutil.Discard, unapprove, execute)
+	Rollback(buildRollbackChanges(), ioutil.Discard, ioutil.Discard, unapprove, execute)
 
 	require.Equal(t, "", executedCommands.String())
 }
@@ -67,7 +61,7 @@ func TestExitsWithoutExecutingIfUserDoesNotApprove(t *testing.T) {
 func TestExecutesRollbackLinesIfUserApproves(t *testing.T) {
 	executedCommands, execute := spyExecute()
 
-	Rollback(changes(), ioutil.Discard, ioutil.Discard, approve, execute)
+	Rollback(buildRollbackChanges(), ioutil.Discard, ioutil.Discard, approve, execute)
 
 	expectedExecution := "bash -c " + rollbackIm + "bash -c " + rollbackMv
 	require.Equal(t, expectedExecution, executedCommands.String())
