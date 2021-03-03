@@ -14,7 +14,7 @@ type localState interface {
 	Name() string
 }
 
-func PlanC(
+func Plan(
 	changes io.Reader,
 	localState localState,
 	screen io.Writer,

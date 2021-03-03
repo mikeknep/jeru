@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-type Plan struct {
+type TfPlan struct {
 	ChangingResources []ChangingResource `json:"resource_changes"`
 }
 
@@ -34,7 +34,7 @@ func (pr PossibleRefactor) AsCommand() string {
 	return fmt.Sprintf("terraform state mv %s %s", pr.OldAddress, pr.NewAddress)
 }
 
-func (plan Plan) PossibleRefactors() []PossibleRefactor {
+func (plan TfPlan) PossibleRefactors() []PossibleRefactor {
 	var possibleRefactors []PossibleRefactor
 
 	var beingDeleted []ChangingResource

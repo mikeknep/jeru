@@ -48,13 +48,13 @@ func (state *StringbuilderLocalState) String() string {
 	return state.writer.String()
 }
 
-func TestPlanC(t *testing.T) {
+func TestPlanCmd(t *testing.T) {
 	changes := strings.NewReader(mv + "\n" + rm)
 	localState := NewLocalState(localStateName)
 	var screen strings.Builder
 	var void strings.Builder
 
-	PlanC(
+	Plan(
 		changes,
 		localState,
 		&screen,
@@ -86,7 +86,7 @@ func TestEndsIfUserDoesNotConfirmComentingOutBackend(t *testing.T) {
 	var screen strings.Builder
 	var void strings.Builder
 
-	PlanC(
+	Plan(
 		changes,
 		localState,
 		&screen,
@@ -111,7 +111,7 @@ func TestAppendsExtraArgumentsToFinalPlan(t *testing.T) {
 	var screen strings.Builder
 	void := ioutil.Discard
 
-	PlanC(
+	Plan(
 		changes,
 		localState,
 		&screen,

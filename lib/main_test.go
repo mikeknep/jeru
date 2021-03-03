@@ -26,7 +26,7 @@ func TestParsesPlanFile(t *testing.T) {
 }
 
 func TestIdentifiesASimplePossibleRefactorMatchingOnType(t *testing.T) {
-	plan := Plan{
+	plan := TfPlan{
 		ChangingResources: []ChangingResource{
 			ChangingResource{
 				Address:      "some_resource.old",
@@ -59,10 +59,10 @@ func TestIdentifiesASimplePossibleRefactorMatchingOnType(t *testing.T) {
 	require.Equal(t, expectedPossibleRefactor, plan.PossibleRefactors()[0])
 }
 
-func parsePlanFile(path string) Plan {
+func parsePlanFile(path string) TfPlan {
 	jsonFile, _ := os.Open(path)
 	bytes, _ := ioutil.ReadAll(jsonFile)
-	var plan Plan
+	var plan TfPlan
 	json.Unmarshal(bytes, &plan)
 	return plan
 }

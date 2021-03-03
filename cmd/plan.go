@@ -39,7 +39,7 @@ var planCmd = &cobra.Command{
 			additionalPlanArgs = args[1:]
 		}
 
-		return lib.PlanC(
+		return lib.Plan(
 			changes,
 			statefile,
 			os.Stdout,

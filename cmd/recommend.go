@@ -30,13 +30,13 @@ var recommendCmd = &cobra.Command{
 			return err
 		}
 
-		// convert the planfile to json and decode into a Plan
+		// convert the planfile to json and decode into a TfPlan
 		reader, writer := io.Pipe()
 		showCommand := lib.Terraform([]string{"show", "-json", planfile}, writer)
 		if err = showCommand.Start(); err != nil {
 			return err
 		}
-		var plan lib.Plan
+		var plan lib.TfPlan
 		if err = json.NewDecoder(reader).Decode(&plan); err != nil {
 			return err
 		}
