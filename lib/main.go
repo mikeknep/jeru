@@ -7,6 +7,11 @@ import (
 	"os/exec"
 )
 
+type NamedWriter interface {
+	io.Writer
+	Name() string
+}
+
 type TfPlan struct {
 	ChangingResources []ChangingResource `json:"resource_changes"`
 }

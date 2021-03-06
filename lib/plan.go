@@ -9,14 +9,9 @@ import (
 const commentOutBackendText = "Comment out your backend, then enter 'yes' to continue."
 const reminderText = "Remember to restore your backend and re-initialize."
 
-type localState interface {
-	io.Writer
-	Name() string
-}
-
 func Plan(
 	changes io.Reader,
-	localState localState,
+	localState NamedWriter,
 	screen io.Writer,
 	void io.Writer,
 	getApproval func() (bool, error),

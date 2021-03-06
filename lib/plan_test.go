@@ -26,31 +26,31 @@ func spyPlanExecute(executedCommands io.Writer, command string, args ...string) 
 	return nil
 }
 
-type StringbuilderLocalState struct {
+type NamedStringbuilder struct {
 	name   string
 	writer *strings.Builder
 }
 
-func NewLocalState(name string) *StringbuilderLocalState {
+func CreateNamedStringbuilder(name string) *NamedStringbuilder {
 	var builder strings.Builder
-	return &StringbuilderLocalState{name: name, writer: &builder}
+	return &NamedStringbuilder{name: name, writer: &builder}
 }
 
-func (state *StringbuilderLocalState) Name() string {
+func (state *NamedStringbuilder) Name() string {
 	return state.name
 }
 
-func (state *StringbuilderLocalState) Write(x []byte) (int, error) {
+func (state *NamedStringbuilder) Write(x []byte) (int, error) {
 	return state.writer.Write(x)
 }
 
-func (state *StringbuilderLocalState) String() string {
+func (state *NamedStringbuilder) String() string {
 	return state.writer.String()
 }
 
 func TestPlanCmd(t *testing.T) {
 	changes := strings.NewReader(mv + "\n" + rm)
-	localState := NewLocalState(localStateName)
+	localState := CreateNamedStringbuilder(localStateName)
 	var screen strings.Builder
 	var void strings.Builder
 
@@ -82,7 +82,7 @@ terraform plan -state local.tfstate
 
 func TestEndsIfUserDoesNotConfirmComentingOutBackend(t *testing.T) {
 	changes := strings.NewReader(mv + "\n" + rm)
-	localState := NewLocalState(localStateName)
+	localState := CreateNamedStringbuilder(localStateName)
 	var screen strings.Builder
 	var void strings.Builder
 
@@ -107,7 +107,7 @@ func TestEndsIfUserDoesNotConfirmComentingOutBackend(t *testing.T) {
 
 func TestAppendsExtraArgumentsToFinalPlan(t *testing.T) {
 	changes := strings.NewReader(mv + "\n" + rm)
-	localState := NewLocalState(localStateName)
+	localState := CreateNamedStringbuilder(localStateName)
 	var screen strings.Builder
 	void := ioutil.Discard
 
