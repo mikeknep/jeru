@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os/exec"
 )
 
 type NamedWriter interface {
@@ -82,13 +81,6 @@ func (plan TfPlan) PossibleRefactors() []PossibleRefactor {
 // this is not sophisticated enough yet
 func isPossiblySameResource(a, b ChangingResource) bool {
 	return a.Type == b.Type && a.ProviderName == b.ProviderName
-}
-
-func Terraform(args []string, stdout io.Writer) *exec.Cmd {
-	cmd := exec.Command("terraform", args...)
-	cmd.Stdout = stdout
-	cmd.Stderr = nil
-	return cmd
 }
 
 func ConsumeByLine(reader io.Reader, f func(string)) error {

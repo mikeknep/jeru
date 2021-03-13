@@ -2,9 +2,7 @@ package lib
 
 import (
 	"bytes"
-	"encoding/json"
 	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 
@@ -18,12 +16,6 @@ func TestFormatsPossibleRefactorAsTerraformCommand(t *testing.T) {
 	}
 
 	require.Equal(t, "terraform state mv old new", pr.AsCommand())
-}
-
-func TestParsesPlanFile(t *testing.T) {
-	plan := parsePlanFile("../fixtures/plan.json")
-
-	require.Equal(t, 2, len(plan.ChangingResources))
 }
 
 func TestIdentifiesASimplePossibleRefactorMatchingOnType(t *testing.T) {
@@ -58,52 +50,6 @@ func TestIdentifiesASimplePossibleRefactorMatchingOnType(t *testing.T) {
 	}
 
 	require.Equal(t, expectedPossibleRefactor, plan.PossibleRefactors()[0])
-}
-
-func parsePlanFile(path string) TfPlan {
-	jsonFile, _ := os.Open(path)
-	bytes, _ := ioutil.ReadAll(jsonFile)
-	var plan TfPlan
-	json.Unmarshal(bytes, &plan)
-	return plan
-}
-
-// TODO: replace with higher level test (addRollbackLine will be private)
-func TestProperlyHandlesNoOpLines(t *testing.T) {
-	rollbackLines := []string{}
-	srcLines := []string{"#!/bin/bash\n", "\n", ""}
-
-	for _, line := range srcLines {
-		addRollbackLine(&rollbackLines, line)
-	}
-
-	require.Equal(t, []string{}, rollbackLines)
-}
-
-// TODO: replace with higher level test (addRollbackLine will be private)
-func TestGeneratesRollbackLinesInReverseOrder(t *testing.T) {
-	rollbackLines := []string{}
-	srcLines := []string{
-		"terraform plan",
-		"terraform state rm module.a",
-		"terraform import module.a identifier",
-		"terraform state mv module.a module.b",
-	}
-
-	for _, line := range srcLines {
-		addRollbackLine(&rollbackLines, line)
-	}
-
-	require.Equal(t, "terraform state mv module.b module.a", rollbackLines[0])
-	require.Equal(t, "terraform state rm module.a", rollbackLines[1])
-
-	// can't generate rollback for removals
-	require.Regexp(t, "^#", rollbackLines[2])       // is a comment
-	require.Regexp(t, "module.a", rollbackLines[2]) // includes the address of the removed resource for reference
-
-	// can't generate rollback for non-state command
-	require.Regexp(t, "^#", rollbackLines[3])             // is a comment
-	require.Regexp(t, "terraform plan", rollbackLines[3]) // includes the original command for reference
 }
 
 func TestActingOnReaderLines(t *testing.T) {
