@@ -1,0 +1,16 @@
+{
+  "resource_changes": [
+    {
+      "address": "local_file.test",
+      "x": "y",
+      "type": "local_file",
+      "name": "test",
+      "provider_name": "registry.terraform.io/hashicorp/local",
+      "change": {
+        "actions": [
+          "create"
+        ]
+      }
+    }
+  ]
+}

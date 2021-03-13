@@ -2,6 +2,7 @@ package lib
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os/exec"
@@ -12,24 +13,6 @@ type NamedWriter interface {
 	Name() string
 }
 
-type TfPlan struct {
-	ChangingResources []ChangingResource `json:"resource_changes"`
-}
-
-type ChangingResource struct {
-	Address      string
-	Change       Change
-	Name         string
-	ProviderName string `json:"provider_name"`
-	Type         string
-}
-
-type Change struct {
-	Actions []string
-	After   *map[string]interface{}
-	Before  *map[string]interface{}
-}
-
 type PossibleRefactor struct {
 	NewAddress string
 	OldAddress string
@@ -37,6 +20,30 @@ type PossibleRefactor struct {
 
 func (pr PossibleRefactor) AsCommand() string {
 	return fmt.Sprintf("terraform state mv %s %s", pr.OldAddress, pr.NewAddress)
+}
+
+type TfPlan struct {
+	ChangingResources []ChangingResource `json:"resource_changes"`
+}
+
+type ChangingResource struct {
+	Address      string `json:"address"`
+	Change       Change `json:"change"`
+	Name         string `json:"name"`
+	ProviderName string `json:"provider_name"`
+	Type         string `json:"type"`
+}
+
+type Change struct {
+	Actions []string `json:"actions"`
+	After   *map[string]interface{}
+	Before  *map[string]interface{}
+}
+
+func NewTfPlan(r io.Reader) (TfPlan, error) {
+	var tfPlan TfPlan
+	err := json.NewDecoder(r).Decode(&tfPlan)
+	return tfPlan, err
 }
 
 func (plan TfPlan) PossibleRefactors() []PossibleRefactor {

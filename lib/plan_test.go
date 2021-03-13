@@ -15,8 +15,6 @@ var (
 
 	noOpExecute = func(io.Writer, string, ...string) error { return nil }
 
-	void = ioutil.Discard
-
 	noExtraArgs = []string{}
 )
 
@@ -24,28 +22,6 @@ func spyPlanExecute(executedCommands io.Writer, command string, args ...string) 
 	fullCommand := command + " " + strings.Join(args, " ") + "\n"
 	executedCommands.Write([]byte(fullCommand))
 	return nil
-}
-
-type NamedStringbuilder struct {
-	name   string
-	writer *strings.Builder
-}
-
-func CreateNamedStringbuilder(name string) *NamedStringbuilder {
-	var builder strings.Builder
-	return &NamedStringbuilder{name: name, writer: &builder}
-}
-
-func (state *NamedStringbuilder) Name() string {
-	return state.name
-}
-
-func (state *NamedStringbuilder) Write(x []byte) (int, error) {
-	return state.writer.Write(x)
-}
-
-func (state *NamedStringbuilder) String() string {
-	return state.writer.String()
 }
 
 func TestPlanCmd(t *testing.T) {
