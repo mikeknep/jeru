@@ -9,16 +9,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFormatsPossibleRefactorAsTerraformCommand(t *testing.T) {
-	pr := PossibleRefactor{
+func TestFormatsRefactorAsTerraformCommand(t *testing.T) {
+	r := Refactor{
 		NewAddress: "new",
 		OldAddress: "old",
 	}
 
-	require.Equal(t, "terraform state mv old new", pr.AsCommand())
+	require.Equal(t, "terraform state mv old new", r.AsCommand())
 }
 
-func TestIdentifiesASimplePossibleRefactorMatchingOnType(t *testing.T) {
+func TestIdentifiesASimpleRefactorMatchingOnType(t *testing.T) {
 	plan := TfPlan{
 		ChangingResources: []ChangingResource{
 			ChangingResource{
@@ -44,12 +44,12 @@ func TestIdentifiesASimplePossibleRefactorMatchingOnType(t *testing.T) {
 			},
 		},
 	}
-	expectedPossibleRefactor := PossibleRefactor{
+	expectedRefactor := Refactor{
 		OldAddress: "some_resource.old",
 		NewAddress: "some_resource.new",
 	}
 
-	require.Equal(t, expectedPossibleRefactor, plan.PossibleRefactors()[0])
+	require.Equal(t, expectedRefactor, plan.PossibleRefactors()[0])
 }
 
 func TestActingOnReaderLines(t *testing.T) {

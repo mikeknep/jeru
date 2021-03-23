@@ -12,13 +12,13 @@ type NamedWriter interface {
 	Name() string
 }
 
-type PossibleRefactor struct {
+type Refactor struct {
 	NewAddress string
 	OldAddress string
 }
 
-func (pr PossibleRefactor) AsCommand() string {
-	return fmt.Sprintf("terraform state mv %s %s", pr.OldAddress, pr.NewAddress)
+func (r Refactor) AsCommand() string {
+	return fmt.Sprintf("terraform state mv %s %s", r.OldAddress, r.NewAddress)
 }
 
 type TfPlan struct {
@@ -45,8 +45,8 @@ func NewTfPlan(r io.Reader) (TfPlan, error) {
 	return tfPlan, err
 }
 
-func (plan TfPlan) PossibleRefactors() []PossibleRefactor {
-	var possibleRefactors []PossibleRefactor
+func (plan TfPlan) PossibleRefactors() []Refactor {
+	var refactors []Refactor
 
 	var beingDeleted []ChangingResource
 	var beingCreated []ChangingResource
@@ -66,8 +66,8 @@ func (plan TfPlan) PossibleRefactors() []PossibleRefactor {
 
 	for _, deleting := range beingDeleted {
 		for _, creating := range beingCreated {
-			if isPossiblySameResource(deleting, creating) {
-				possibleRefactors = append(possibleRefactors, PossibleRefactor{
+			if isSameResourceType(deleting, creating) {
+				refactors = append(refactors, Refactor{
 					NewAddress: creating.Address,
 					OldAddress: deleting.Address,
 				})
@@ -75,11 +75,10 @@ func (plan TfPlan) PossibleRefactors() []PossibleRefactor {
 		}
 	}
 
-	return possibleRefactors
+	return refactors
 }
 
-// this is not sophisticated enough yet
-func isPossiblySameResource(a, b ChangingResource) bool {
+func isSameResourceType(a, b ChangingResource) bool {
 	return a.Type == b.Type && a.ProviderName == b.ProviderName
 }
 

@@ -27,8 +27,8 @@ func Recommend(
 		return err
 	}
 
-	for _, possibleRefactor := range tfPlan.PossibleRefactors() {
-		fmt.Fprintln(screen, possibleRefactor.AsCommand())
+	for _, refactor := range tfPlan.PossibleRefactors() {
+		fmt.Fprintln(screen, refactor.AsCommand())
 	}
 
 	return nil
