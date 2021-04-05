@@ -35,7 +35,7 @@ func TestRecommendRunsTerraformPlanAndShowCommands(t *testing.T) {
 	screen := ioutil.Discard
 	var void strings.Builder
 
-	Recommend(planfile, jsonPlan, screen, &void, spyPlanExecute)
+	Recommend(planfile, jsonPlan, screen, &void, spyPlanExecute, BestEffortRefactorFinder)
 
 	expectedVoid := "terraform plan -out planfile\n"
 	require.Equal(t, expectedVoid, void.String())

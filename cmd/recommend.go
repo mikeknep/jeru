@@ -30,7 +30,7 @@ var recommendCmd = &cobra.Command{
 			return cmd.Run()
 		}
 
-		return lib.Recommend(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute)
+		return lib.Recommend(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, lib.BestEffortRefactorFinder)
 	},
 }
 

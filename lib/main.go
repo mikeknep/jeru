@@ -45,43 +45,6 @@ func NewTfPlan(r io.Reader) (TfPlan, error) {
 	return tfPlan, err
 }
 
-func (plan TfPlan) PossibleRefactors() []Refactor {
-	var refactors []Refactor
-
-	var beingDeleted []ChangingResource
-	var beingCreated []ChangingResource
-
-	for _, cr := range plan.ChangingResources {
-		actions := cr.Change.Actions
-		switch {
-		case len(actions) == 2:
-			// "replace" actions are represented as either ["delete", "create"] or ["create", "delete"]
-			// These changes cannot be avoided with terraform state mv, and so are ignored here
-		case actions[0] == "delete":
-			beingDeleted = append(beingDeleted, cr)
-		case actions[0] == "create":
-			beingCreated = append(beingCreated, cr)
-		}
-	}
-
-	for _, deleting := range beingDeleted {
-		for _, creating := range beingCreated {
-			if isSameResourceType(deleting, creating) {
-				refactors = append(refactors, Refactor{
-					NewAddress: creating.Address,
-					OldAddress: deleting.Address,
-				})
-			}
-		}
-	}
-
-	return refactors
-}
-
-func isSameResourceType(a, b ChangingResource) bool {
-	return a.Type == b.Type && a.ProviderName == b.ProviderName
-}
-
 func ConsumeByLine(reader io.Reader, f func(string)) error {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
