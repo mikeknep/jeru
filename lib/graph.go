@@ -8,6 +8,13 @@ type Node struct {
 	Name   string
 }
 
+func createEdge(x, y Node) Edge {
+	if x.Action == "create" {
+		return Edge{a: &x, b: &y}
+	}
+	return Edge{a: &y, b: &x}
+}
+
 type Edge struct {
 	a *Node
 	b *Node
@@ -70,8 +77,8 @@ func find(nodes []Node, current []Edge, results *[][]Edge) {
 	copy(remNodes, nodes[1:])
 
 	for i := 0; i < len(remNodes); i++ {
-		nodeB := remNodes[i]               // pluck another node from the set of nodes...
-		edge := Edge{a: &nodeA, b: &nodeB} // ...and create an Edge
+		nodeB := remNodes[i]             // pluck another node from the set of nodes...
+		edge := createEdge(nodeA, nodeB) // ...and create an Edge
 
 		// add the Edge to the set we're currently building
 		current = append(current, edge)

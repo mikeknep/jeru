@@ -71,7 +71,7 @@ func TestGraphs(t *testing.T) {
 				[]Edge{
 					// This set is also *valid*
 					Edge{a: &createBucket1, b: &deleteBucket2},
-					Edge{a: &deleteBucket1, b: &createBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
 				},
 			},
 		},
@@ -103,13 +103,13 @@ func TestGraphs(t *testing.T) {
 					Edge{a: &createBucket1, b: &deleteBucket1},
 					Edge{a: &createBucket2, b: &deleteBucket2},
 					Edge{a: &createDatabase1, b: &deleteDatabase2},
-					Edge{a: &deleteDatabase1, b: &createDatabase2},
+					Edge{a: &createDatabase2, b: &deleteDatabase1},
 					Edge{a: &createInstance, b: &deleteInstance},
 				},
 				[]Edge{
 					// wrong buckets, correct databases
 					Edge{a: &createBucket1, b: &deleteBucket2},
-					Edge{a: &deleteBucket1, b: &createBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
 					Edge{a: &createDatabase1, b: &deleteDatabase1},
 					Edge{a: &createDatabase2, b: &deleteDatabase2},
 					Edge{a: &createInstance, b: &deleteInstance},
@@ -117,9 +117,9 @@ func TestGraphs(t *testing.T) {
 				[]Edge{
 					// wrong buckets, wrong databases
 					Edge{a: &createBucket1, b: &deleteBucket2},
-					Edge{a: &deleteBucket1, b: &createBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
 					Edge{a: &createDatabase1, b: &deleteDatabase2},
-					Edge{a: &deleteDatabase1, b: &createDatabase2},
+					Edge{a: &createDatabase2, b: &deleteDatabase1},
 					Edge{a: &createInstance, b: &deleteInstance},
 				},
 			},
