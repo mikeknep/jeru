@@ -25,6 +25,20 @@ type TfPlan struct {
 	ChangingResources []ChangingResource `json:"resource_changes"`
 }
 
+func (p TfPlan) MvCandidates() []ChangingResource {
+	var movable []ChangingResource
+
+	// "replace" actions are represented as either ["delete", "create"] or ["create", "delete"]
+	// These changes cannot be avoided with terraform state mv
+	for _, cr := range p.ChangingResources {
+		if len(cr.Change.Actions) != 2 {
+			movable = append(movable, cr)
+		}
+	}
+
+	return movable
+}
+
 type ChangingResource struct {
 	Address      string `json:"address"`
 	Change       Change `json:"change"`
@@ -37,6 +51,19 @@ type Change struct {
 	Actions []string `json:"actions"`
 	After   *map[string]interface{}
 	Before  *map[string]interface{}
+}
+
+func (cr ChangingResource) GetAction() string {
+	return cr.Change.Actions[0]
+}
+func (cr ChangingResource) GetType() string {
+	return cr.Type
+}
+func (cr ChangingResource) GetAddress() string {
+	return cr.Address
+}
+func (cr ChangingResource) String() string {
+	return cr.Address
 }
 
 func NewTfPlan(r io.Reader) (TfPlan, error) {
