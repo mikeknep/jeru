@@ -56,17 +56,13 @@ func isValidSet(set []Edge) bool {
 }
 
 func validEdgeCombinationsFor(nodes []Node) [][]Edge {
-	var allSets [][]Edge
-
-	find(nodes, []Edge{}, &allSets)
-
-	return allSets
+	return find(nodes, []Edge{})
 }
 
-func find(nodes []Node, current []Edge, results *[][]Edge) {
+func find(nodes []Node, current []Edge) (results [][]Edge) {
 	if len(nodes) < 2 {
 		if isValidSet(current) {
-			*results = append(*results, current)
+			results = append(results, current)
 		}
 		return
 	}
@@ -95,9 +91,10 @@ func find(nodes []Node, current []Edge, results *[][]Edge) {
 		nextSet := append(nextSetFirstPart, nextSetSecondPart...)
 
 		// recursively find more edges
-		find(nextSet, current, results)
+		results = append(results, find(nextSet, current)...)
 
 		// clear out the current collection as we bubble up out of recursion
 		current = current[:len(current)-1]
 	}
+	return
 }
