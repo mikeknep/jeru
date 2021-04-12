@@ -2,37 +2,38 @@ package lib
 
 import "fmt"
 
-type Node struct {
-	Action string // "create" or "delete"
-	Type   string
-	Name   string
+type Node interface {
+	GetAction() string // "create" or "delete"
+	GetAddress() string
+	GetType() string
 }
 
 func createEdge(x, y Node) Edge {
-	if x.Action == "create" {
-		return Edge{a: &x, b: &y}
+	if x.GetAction() == "create" {
+		return Edge{a: x, b: y}
 	}
-	return Edge{a: &y, b: &x}
+	return Edge{a: y, b: x}
 }
 
 type Edge struct {
-	a *Node
-	b *Node
+	a Node
+	b Node
 }
 
 func (e Edge) String() string {
-	return fmt.Sprintf("<a: %s, b: %s>", *e.a, *e.b)
+	return fmt.Sprintf("<a: %s, b: %s>", e.a, e.b)
 }
 
 func (e Edge) isValid() bool {
-	sameType := e.a.Type == e.b.Type
-	differentActions := e.a.Action != e.b.Action
+	sameType := e.a.GetType() == e.b.GetType()
+	differentActions := e.a.GetAction() != e.b.GetAction()
 
 	return sameType && differentActions
 }
 
 func isValidSet(set []Edge) bool {
-	var seenNodes []*Node
+	var seenNodes []Node
+
 	for _, edge := range set {
 		// a set of edges is only valid if all its component edges are valid
 		if !edge.isValid() {
@@ -42,7 +43,7 @@ func isValidSet(set []Edge) bool {
 		// a set of edges is only valid if the edges' nodes are unique
 		// aka, each node can only have zero or one edge
 		for _, seenNode := range seenNodes {
-			if seenNode == edge.a || seenNode == edge.b {
+			if seenNode.GetAddress() == edge.a.GetAddress() || seenNode.GetAddress() == edge.b.GetAddress() {
 				return false
 			}
 		}

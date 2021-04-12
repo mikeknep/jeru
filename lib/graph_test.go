@@ -1,26 +1,43 @@
 package lib
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
+type testNode struct {
+	Action string
+	Type   string
+	Name   string
+}
+
+func (n testNode) GetAction() string {
+	return n.Action
+}
+func (n testNode) GetAddress() string {
+	return fmt.Sprintf("%s.%s.%s", n.Action, n.Name, n.Type)
+}
+func (n testNode) GetType() string {
+	return n.Type
+}
+
 var (
-	createBucket1 = Node{Action: "create", Type: "bucket", Name: "bucketOne"}
-	deleteBucket1 = Node{Action: "delete", Type: "bucket", Name: "bucketOne"}
+	createBucket1 = testNode{Action: "create", Type: "bucket", Name: "bucketOne"}
+	deleteBucket1 = testNode{Action: "delete", Type: "bucket", Name: "bucketOne"}
 
-	createBucket2 = Node{Action: "create", Type: "bucket", Name: "bucketTwo"}
-	deleteBucket2 = Node{Action: "delete", Type: "bucket", Name: "bucketTwo"}
+	createBucket2 = testNode{Action: "create", Type: "bucket", Name: "bucketTwo"}
+	deleteBucket2 = testNode{Action: "delete", Type: "bucket", Name: "bucketTwo"}
 
-	createDatabase1 = Node{Action: "create", Type: "database", Name: "dbOne"}
-	deleteDatabase1 = Node{Action: "delete", Type: "database", Name: "dbOne"}
+	createDatabase1 = testNode{Action: "create", Type: "database", Name: "dbOne"}
+	deleteDatabase1 = testNode{Action: "delete", Type: "database", Name: "dbOne"}
 
-	createDatabase2 = Node{Action: "create", Type: "database", Name: "dbTwo"}
-	deleteDatabase2 = Node{Action: "delete", Type: "database", Name: "dbTwo"}
+	createDatabase2 = testNode{Action: "create", Type: "database", Name: "dbTwo"}
+	deleteDatabase2 = testNode{Action: "delete", Type: "database", Name: "dbTwo"}
 
-	createInstance = Node{Action: "create", Type: "instance", Name: "instanceOne"}
-	deleteInstance = Node{Action: "delete", Type: "instance", Name: "instanceOne"}
+	createInstance = testNode{Action: "create", Type: "instance", Name: "instanceOne"}
+	deleteInstance = testNode{Action: "delete", Type: "instance", Name: "instanceOne"}
 )
 
 func TestGraphs(t *testing.T) {
@@ -35,7 +52,7 @@ func TestGraphs(t *testing.T) {
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
-					Edge{a: &createBucket1, b: &deleteBucket1},
+					Edge{a: createBucket1, b: deleteBucket1},
 				},
 			},
 		},
@@ -49,8 +66,8 @@ func TestGraphs(t *testing.T) {
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
-					Edge{a: &createBucket1, b: &deleteBucket1},
-					Edge{a: &createDatabase1, b: &deleteDatabase1},
+					Edge{a: createBucket1, b: deleteBucket1},
+					Edge{a: createDatabase1, b: deleteDatabase1},
 				},
 			},
 		},
@@ -65,13 +82,13 @@ func TestGraphs(t *testing.T) {
 			expectedSets: [][]Edge{
 				[]Edge{
 					// This set contains the "correct" pairs
-					Edge{a: &createBucket1, b: &deleteBucket1},
-					Edge{a: &createBucket2, b: &deleteBucket2},
+					Edge{a: createBucket1, b: deleteBucket1},
+					Edge{a: createBucket2, b: deleteBucket2},
 				},
 				[]Edge{
 					// This set is also *valid*
-					Edge{a: &createBucket1, b: &deleteBucket2},
-					Edge{a: &createBucket2, b: &deleteBucket1},
+					Edge{a: createBucket1, b: deleteBucket2},
+					Edge{a: createBucket2, b: deleteBucket1},
 				},
 			},
 		},
@@ -92,35 +109,35 @@ func TestGraphs(t *testing.T) {
 			expectedSets: [][]Edge{
 				[]Edge{
 					// correct buckets, correct databases
-					Edge{a: &createBucket1, b: &deleteBucket1},
-					Edge{a: &createBucket2, b: &deleteBucket2},
-					Edge{a: &createDatabase1, b: &deleteDatabase1},
-					Edge{a: &createDatabase2, b: &deleteDatabase2},
-					Edge{a: &createInstance, b: &deleteInstance},
+					Edge{a: createBucket1, b: deleteBucket1},
+					Edge{a: createBucket2, b: deleteBucket2},
+					Edge{a: createDatabase1, b: deleteDatabase1},
+					Edge{a: createDatabase2, b: deleteDatabase2},
+					Edge{a: createInstance, b: deleteInstance},
 				},
 				[]Edge{
 					// correct buckets, wrong databases
-					Edge{a: &createBucket1, b: &deleteBucket1},
-					Edge{a: &createBucket2, b: &deleteBucket2},
-					Edge{a: &createDatabase1, b: &deleteDatabase2},
-					Edge{a: &createDatabase2, b: &deleteDatabase1},
-					Edge{a: &createInstance, b: &deleteInstance},
+					Edge{a: createBucket1, b: deleteBucket1},
+					Edge{a: createBucket2, b: deleteBucket2},
+					Edge{a: createDatabase1, b: deleteDatabase2},
+					Edge{a: createDatabase2, b: deleteDatabase1},
+					Edge{a: createInstance, b: deleteInstance},
 				},
 				[]Edge{
 					// wrong buckets, correct databases
-					Edge{a: &createBucket1, b: &deleteBucket2},
-					Edge{a: &createBucket2, b: &deleteBucket1},
-					Edge{a: &createDatabase1, b: &deleteDatabase1},
-					Edge{a: &createDatabase2, b: &deleteDatabase2},
-					Edge{a: &createInstance, b: &deleteInstance},
+					Edge{a: createBucket1, b: deleteBucket2},
+					Edge{a: createBucket2, b: deleteBucket1},
+					Edge{a: createDatabase1, b: deleteDatabase1},
+					Edge{a: createDatabase2, b: deleteDatabase2},
+					Edge{a: createInstance, b: deleteInstance},
 				},
 				[]Edge{
 					// wrong buckets, wrong databases
-					Edge{a: &createBucket1, b: &deleteBucket2},
-					Edge{a: &createBucket2, b: &deleteBucket1},
-					Edge{a: &createDatabase1, b: &deleteDatabase2},
-					Edge{a: &createDatabase2, b: &deleteDatabase1},
-					Edge{a: &createInstance, b: &deleteInstance},
+					Edge{a: createBucket1, b: deleteBucket2},
+					Edge{a: createBucket2, b: deleteBucket1},
+					Edge{a: createDatabase1, b: deleteDatabase2},
+					Edge{a: createDatabase2, b: deleteDatabase1},
+					Edge{a: createInstance, b: deleteInstance},
 				},
 			},
 		},
