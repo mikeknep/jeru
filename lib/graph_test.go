@@ -57,6 +57,22 @@ func TestGraphs(t *testing.T) {
 			},
 		},
 
+		"Simple odd number": {
+			nodes: []Node{
+				createBucket1,
+				deleteBucket1,
+				createBucket2,
+			},
+			expectedSets: [][]Edge{
+				[]Edge{
+					Edge{a: createBucket1, b: deleteBucket1},
+				},
+				[]Edge{
+					Edge{a: createBucket2, b: deleteBucket1},
+				},
+			},
+		},
+
 		"Two pairs of different types": {
 			nodes: []Node{
 				createBucket1,
