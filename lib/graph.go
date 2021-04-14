@@ -60,6 +60,23 @@ func validEdgeCombinationsFor(nodes []Node) [][]Edge {
 }
 
 func find(nodes []Node, current []Edge) (results [][]Edge) {
+	if len(nodes) == 3 {
+		currentPlusOne := append(current, createEdge(nodes[0], nodes[1]))
+		currentPlusTwo := append(current, createEdge(nodes[1], nodes[2]))
+		currentPlusThree := append(current, createEdge(nodes[0], nodes[2]))
+
+		if isValidSet(currentPlusOne) {
+			results = append(results, currentPlusOne)
+		}
+		if isValidSet(currentPlusTwo) {
+			results = append(results, currentPlusTwo)
+		}
+		if isValidSet(currentPlusThree) {
+			results = append(results, currentPlusThree)
+		}
+		return
+	}
+
 	if len(nodes) < 2 {
 		if isValidSet(current) {
 			results = append(results, current)
