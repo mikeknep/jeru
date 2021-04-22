@@ -21,7 +21,7 @@ type Edge struct {
 }
 
 func (e Edge) String() string {
-	return fmt.Sprintf("<a: %s, b: %s>", e.a, e.b)
+	return fmt.Sprintf("<\n\ta: %s\n\tb: %s\n>", e.a, e.b)
 }
 
 func (e Edge) isValid() bool {

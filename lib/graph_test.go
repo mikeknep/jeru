@@ -129,6 +129,26 @@ func TestGraphs(t *testing.T) {
 			},
 		},
 
+		"Larger odd number different order": {
+			nodes: []Node{
+				createInstance,
+				createBucket1,
+				deleteBucket1,
+				createBucket2,
+				deleteBucket2,
+			},
+			expectedSets: [][]Edge{
+				[]Edge{
+					Edge{a: createBucket1, b: deleteBucket1},
+					Edge{a: createBucket2, b: deleteBucket2},
+				},
+				[]Edge{
+					Edge{a: createBucket1, b: deleteBucket2},
+					Edge{a: createBucket2, b: deleteBucket1},
+				},
+			},
+		},
+
 		"Complex": {
 			nodes: []Node{
 				createBucket1,
