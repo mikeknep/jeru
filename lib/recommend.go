@@ -14,8 +14,11 @@ func Recommend(
 	void io.Writer,
 	execute func(io.Writer, string, ...string) error,
 	getRefactors RefactorFinder,
+	additionalPlanArgs []string,
 ) error {
-	err := execute(void, "terraform", "plan", "-out", planfile.Name())
+	planArgs := []string{"plan", "-out", planfile.Name()}
+	planArgs = append(planArgs, additionalPlanArgs...)
+	err := execute(void, "terraform", planArgs...)
 	if err != nil {
 		return err
 	}

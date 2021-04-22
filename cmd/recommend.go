@@ -30,7 +30,12 @@ var recommendCmd = &cobra.Command{
 			return cmd.Run()
 		}
 
-		return lib.Recommend(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, lib.BestEffortRefactorFinder)
+		additionalPlanArgs := []string{}
+		if len(args) > 1 {
+			additionalPlanArgs = args[1:]
+		}
+
+		return lib.Recommend(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, lib.BestEffortRefactorFinder, additionalPlanArgs)
 	},
 }
 
