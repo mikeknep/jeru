@@ -40,158 +40,158 @@ var (
 
 func TestGraphs(t *testing.T) {
 	tests := map[string]struct {
-		nodes        []ChangingResource
+		nodes        []*ChangingResource
 		expectedSets [][]Edge
 	}{
 		"Simplest case: a single pair": {
-			nodes: []ChangingResource{
-				createBucket1,
-				deleteBucket1,
+			nodes: []*ChangingResource{
+				&createBucket1,
+				&deleteBucket1,
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
-					Edge{a: createBucket1, b: deleteBucket1},
+					Edge{a: &createBucket1, b: &deleteBucket1},
 				},
 			},
 		},
 
 		"Simple odd number": {
-			nodes: []ChangingResource{
-				createBucket1,
-				deleteBucket1,
-				createBucket2,
+			nodes: []*ChangingResource{
+				&createBucket1,
+				&deleteBucket1,
+				&createBucket2,
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
-					Edge{a: createBucket1, b: deleteBucket1},
+					Edge{a: &createBucket1, b: &deleteBucket1},
 				},
 				[]Edge{
-					Edge{a: createBucket2, b: deleteBucket1},
+					Edge{a: &createBucket2, b: &deleteBucket1},
 				},
 			},
 		},
 
 		"Two pairs of different types": {
-			nodes: []ChangingResource{
-				createBucket1,
-				deleteBucket1,
-				createDatabase1,
-				deleteDatabase1,
+			nodes: []*ChangingResource{
+				&createBucket1,
+				&deleteBucket1,
+				&createDatabase1,
+				&deleteDatabase1,
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
-					Edge{a: createBucket1, b: deleteBucket1},
-					Edge{a: createDatabase1, b: deleteDatabase1},
+					Edge{a: &createBucket1, b: &deleteBucket1},
+					Edge{a: &createDatabase1, b: &deleteDatabase1},
 				},
 			},
 		},
 
 		"Two pairs of same type": {
-			nodes: []ChangingResource{
-				createBucket1,
-				deleteBucket1,
-				createBucket2,
-				deleteBucket2,
+			nodes: []*ChangingResource{
+				&createBucket1,
+				&deleteBucket1,
+				&createBucket2,
+				&deleteBucket2,
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
 					// This set contains the "correct" pairs
-					Edge{a: createBucket1, b: deleteBucket1},
-					Edge{a: createBucket2, b: deleteBucket2},
+					Edge{a: &createBucket1, b: &deleteBucket1},
+					Edge{a: &createBucket2, b: &deleteBucket2},
 				},
 				[]Edge{
 					// This set is also *valid*
-					Edge{a: createBucket1, b: deleteBucket2},
-					Edge{a: createBucket2, b: deleteBucket1},
+					Edge{a: &createBucket1, b: &deleteBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
 				},
 			},
 		},
 
 		"Larger odd number": {
-			nodes: []ChangingResource{
-				createBucket1,
-				deleteBucket1,
-				createInstance,
-				createBucket2,
-				deleteBucket2,
+			nodes: []*ChangingResource{
+				&createBucket1,
+				&deleteBucket1,
+				&createInstance,
+				&createBucket2,
+				&deleteBucket2,
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
-					Edge{a: createBucket1, b: deleteBucket1},
-					Edge{a: createBucket2, b: deleteBucket2},
+					Edge{a: &createBucket1, b: &deleteBucket1},
+					Edge{a: &createBucket2, b: &deleteBucket2},
 				},
 				[]Edge{
-					Edge{a: createBucket1, b: deleteBucket2},
-					Edge{a: createBucket2, b: deleteBucket1},
+					Edge{a: &createBucket1, b: &deleteBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
 				},
 			},
 		},
 
 		"Larger odd number different order": {
-			nodes: []ChangingResource{
-				createInstance,
-				createBucket1,
-				deleteBucket1,
-				createBucket2,
-				deleteBucket2,
+			nodes: []*ChangingResource{
+				&createInstance,
+				&createBucket1,
+				&deleteBucket1,
+				&createBucket2,
+				&deleteBucket2,
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
-					Edge{a: createBucket1, b: deleteBucket1},
-					Edge{a: createBucket2, b: deleteBucket2},
+					Edge{a: &createBucket1, b: &deleteBucket1},
+					Edge{a: &createBucket2, b: &deleteBucket2},
 				},
 				[]Edge{
-					Edge{a: createBucket1, b: deleteBucket2},
-					Edge{a: createBucket2, b: deleteBucket1},
+					Edge{a: &createBucket1, b: &deleteBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
 				},
 			},
 		},
 
 		"Complex": {
-			nodes: []ChangingResource{
-				createBucket1,
-				deleteBucket1,
-				createBucket2,
-				deleteBucket2,
-				createDatabase1,
-				deleteDatabase1,
-				createDatabase2,
-				deleteDatabase2,
-				createInstance,
-				deleteInstance,
+			nodes: []*ChangingResource{
+				&createBucket1,
+				&deleteBucket1,
+				&createBucket2,
+				&deleteBucket2,
+				&createDatabase1,
+				&deleteDatabase1,
+				&createDatabase2,
+				&deleteDatabase2,
+				&createInstance,
+				&deleteInstance,
 			},
 			expectedSets: [][]Edge{
 				[]Edge{
 					// correct buckets, correct databases
-					Edge{a: createBucket1, b: deleteBucket1},
-					Edge{a: createBucket2, b: deleteBucket2},
-					Edge{a: createDatabase1, b: deleteDatabase1},
-					Edge{a: createDatabase2, b: deleteDatabase2},
-					Edge{a: createInstance, b: deleteInstance},
+					Edge{a: &createBucket1, b: &deleteBucket1},
+					Edge{a: &createBucket2, b: &deleteBucket2},
+					Edge{a: &createDatabase1, b: &deleteDatabase1},
+					Edge{a: &createDatabase2, b: &deleteDatabase2},
+					Edge{a: &createInstance, b: &deleteInstance},
 				},
 				[]Edge{
 					// correct buckets, wrong databases
-					Edge{a: createBucket1, b: deleteBucket1},
-					Edge{a: createBucket2, b: deleteBucket2},
-					Edge{a: createDatabase1, b: deleteDatabase2},
-					Edge{a: createDatabase2, b: deleteDatabase1},
-					Edge{a: createInstance, b: deleteInstance},
+					Edge{a: &createBucket1, b: &deleteBucket1},
+					Edge{a: &createBucket2, b: &deleteBucket2},
+					Edge{a: &createDatabase1, b: &deleteDatabase2},
+					Edge{a: &createDatabase2, b: &deleteDatabase1},
+					Edge{a: &createInstance, b: &deleteInstance},
 				},
 				[]Edge{
 					// wrong buckets, correct databases
-					Edge{a: createBucket1, b: deleteBucket2},
-					Edge{a: createBucket2, b: deleteBucket1},
-					Edge{a: createDatabase1, b: deleteDatabase1},
-					Edge{a: createDatabase2, b: deleteDatabase2},
-					Edge{a: createInstance, b: deleteInstance},
+					Edge{a: &createBucket1, b: &deleteBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
+					Edge{a: &createDatabase1, b: &deleteDatabase1},
+					Edge{a: &createDatabase2, b: &deleteDatabase2},
+					Edge{a: &createInstance, b: &deleteInstance},
 				},
 				[]Edge{
 					// wrong buckets, wrong databases
-					Edge{a: createBucket1, b: deleteBucket2},
-					Edge{a: createBucket2, b: deleteBucket1},
-					Edge{a: createDatabase1, b: deleteDatabase2},
-					Edge{a: createDatabase2, b: deleteDatabase1},
-					Edge{a: createInstance, b: deleteInstance},
+					Edge{a: &createBucket1, b: &deleteBucket2},
+					Edge{a: &createBucket2, b: &deleteBucket1},
+					Edge{a: &createDatabase1, b: &deleteDatabase2},
+					Edge{a: &createDatabase2, b: &deleteDatabase1},
+					Edge{a: &createInstance, b: &deleteInstance},
 				},
 			},
 		},

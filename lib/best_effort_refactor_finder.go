@@ -2,7 +2,11 @@ package lib
 
 func BestEffortRefactorFinder(plan TfPlan) ([]Refactor, error) {
 	candidates := plan.MvCandidates()
-	validSets := validEdgeCombinationsFor(candidates)
+	candidatePointers := make([]*ChangingResource, len(candidates))
+	for i := range candidates {
+		candidatePointers[i] = &candidates[i]
+	}
+	validSets := validEdgeCombinationsFor(candidatePointers)
 
 	var bestSet []Refactor
 	var bestScore float64
@@ -31,7 +35,7 @@ func asRefactors(set []Edge) []Refactor {
 func cumulativeScore(set []Edge) float64 {
 	var score float64
 	for _, edge := range set {
-		score = score + getScore(edge.a, edge.b)
+		score = score + getScore(*edge.a, *edge.b)
 	}
 	return score
 }

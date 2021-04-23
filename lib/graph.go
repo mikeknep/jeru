@@ -1,6 +1,6 @@
 package lib
 
-func createEdge(x, y ChangingResource) Edge {
+func createEdge(x, y *ChangingResource) Edge {
 	if x.GetAction() == "create" {
 		return Edge{a: x, b: y}
 	}
@@ -8,11 +8,15 @@ func createEdge(x, y ChangingResource) Edge {
 }
 
 type Edge struct {
-	a ChangingResource
-	b ChangingResource
+	a *ChangingResource
+	b *ChangingResource
 }
 
 func (e Edge) isValid() bool {
+	if e.a == nil || e.b == nil {
+		return false
+	}
+
 	sameType := e.a.GetType() == e.b.GetType()
 	differentActions := e.a.GetAction() != e.b.GetAction()
 
@@ -20,7 +24,7 @@ func (e Edge) isValid() bool {
 }
 
 func isValidSet(set []Edge) bool {
-	var seenNodes []ChangingResource
+	var seenNodes []*ChangingResource
 
 	for _, edge := range set {
 		// a set of edges is only valid if all its component edges are valid
@@ -31,7 +35,7 @@ func isValidSet(set []Edge) bool {
 		// a set of edges is only valid if the edges' nodes are unique
 		// aka, each node can only have zero or one edge
 		for _, seenNode := range seenNodes {
-			if seenNode.GetAddress() == edge.a.GetAddress() || seenNode.GetAddress() == edge.b.GetAddress() {
+			if seenNode == edge.a || seenNode == edge.b {
 				return false
 			}
 		}
@@ -43,11 +47,11 @@ func isValidSet(set []Edge) bool {
 	return true
 }
 
-func validEdgeCombinationsFor(nodes []ChangingResource) [][]Edge {
+func validEdgeCombinationsFor(nodes []*ChangingResource) [][]Edge {
 	return find(nodes, []Edge{})
 }
 
-func find(nodes []ChangingResource, current []Edge) (results [][]Edge) {
+func find(nodes []*ChangingResource, current []Edge) (results [][]Edge) {
 	if len(nodes) == 3 {
 		currentPlusOne := append(current, createEdge(nodes[0], nodes[1]))
 		currentPlusTwo := append(current, createEdge(nodes[1], nodes[2]))
@@ -75,7 +79,7 @@ func find(nodes []ChangingResource, current []Edge) (results [][]Edge) {
 	nodeA := nodes[0] // pluck the first node from the set of nodes
 
 	// ensure we don't change the original nodes. slices do not copy!
-	remNodes := make([]ChangingResource, len(nodes)-1)
+	remNodes := make([]*ChangingResource, len(nodes)-1)
 	copy(remNodes, nodes[1:])
 
 	for i := 0; i < len(remNodes); i++ {
@@ -89,8 +93,8 @@ func find(nodes []ChangingResource, current []Edge) (results [][]Edge) {
 		// by copying all nodes up to that node,
 		// and all nodes after that node,
 		// and stitching those two slices together
-		nextSetFirstPart := make([]ChangingResource, i)
-		nextSetSecondPart := make([]ChangingResource, len(remNodes)-i-1)
+		nextSetFirstPart := make([]*ChangingResource, i)
+		nextSetSecondPart := make([]*ChangingResource, len(remNodes)-i-1)
 		copy(nextSetFirstPart, remNodes[:i])
 		copy(nextSetSecondPart, remNodes[i+1:])
 		nextSet := append(nextSetFirstPart, nextSetSecondPart...)
