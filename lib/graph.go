@@ -14,7 +14,7 @@ type Edge struct {
 
 func (e Edge) isValid() bool {
 	if e.a == nil || e.b == nil {
-		return false
+		return true
 	}
 
 	sameType := e.a.GetType() == e.b.GetType()
@@ -48,7 +48,24 @@ func isValidSet(set []Edge) bool {
 }
 
 func validEdgeCombinationsFor(nodes []*ChangingResource) [][]Edge {
-	return find(nodes, []Edge{})
+	if len(nodes)%2 != 0 {
+		nodes = append(nodes, nil)
+	}
+	results := find(nodes, []Edge{})
+	for i, setOfEdges := range results {
+		for j, edge := range setOfEdges {
+			if edge.a == nil || edge.b == nil {
+				setWithoutNilFirstPart := make([]Edge, j)
+				setWithoutNilSecondPart := make([]Edge, len(setOfEdges)-j-1)
+				copy(setWithoutNilFirstPart, setOfEdges[:j])
+				copy(setWithoutNilSecondPart, setOfEdges[j+1:])
+				setWithoutNilEdge := append(setWithoutNilFirstPart, setWithoutNilSecondPart...)
+				results[i] = setWithoutNilEdge
+			}
+		}
+	}
+
+	return results
 }
 
 func find(nodes []*ChangingResource, current []Edge) (results [][]Edge) {
