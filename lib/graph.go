@@ -1,14 +1,6 @@
 package lib
 
-import "fmt"
-
-type Node interface {
-	GetAction() string // "create" or "delete"
-	GetAddress() string
-	GetType() string
-}
-
-func createEdge(x, y Node) Edge {
+func createEdge(x, y ChangingResource) Edge {
 	if x.GetAction() == "create" {
 		return Edge{a: x, b: y}
 	}
@@ -16,12 +8,8 @@ func createEdge(x, y Node) Edge {
 }
 
 type Edge struct {
-	a Node
-	b Node
-}
-
-func (e Edge) String() string {
-	return fmt.Sprintf("<\n\ta: %s\n\tb: %s\n>", e.a, e.b)
+	a ChangingResource
+	b ChangingResource
 }
 
 func (e Edge) isValid() bool {
@@ -32,7 +20,7 @@ func (e Edge) isValid() bool {
 }
 
 func isValidSet(set []Edge) bool {
-	var seenNodes []Node
+	var seenNodes []ChangingResource
 
 	for _, edge := range set {
 		// a set of edges is only valid if all its component edges are valid
@@ -55,11 +43,11 @@ func isValidSet(set []Edge) bool {
 	return true
 }
 
-func validEdgeCombinationsFor(nodes []Node) [][]Edge {
+func validEdgeCombinationsFor(nodes []ChangingResource) [][]Edge {
 	return find(nodes, []Edge{})
 }
 
-func find(nodes []Node, current []Edge) (results [][]Edge) {
+func find(nodes []ChangingResource, current []Edge) (results [][]Edge) {
 	if len(nodes) == 3 {
 		currentPlusOne := append(current, createEdge(nodes[0], nodes[1]))
 		currentPlusTwo := append(current, createEdge(nodes[1], nodes[2]))
@@ -87,7 +75,7 @@ func find(nodes []Node, current []Edge) (results [][]Edge) {
 	nodeA := nodes[0] // pluck the first node from the set of nodes
 
 	// ensure we don't change the original nodes. slices do not copy!
-	remNodes := make([]Node, len(nodes)-1)
+	remNodes := make([]ChangingResource, len(nodes)-1)
 	copy(remNodes, nodes[1:])
 
 	for i := 0; i < len(remNodes); i++ {
@@ -101,8 +89,8 @@ func find(nodes []Node, current []Edge) (results [][]Edge) {
 		// by copying all nodes up to that node,
 		// and all nodes after that node,
 		// and stitching those two slices together
-		nextSetFirstPart := make([]Node, i)
-		nextSetSecondPart := make([]Node, len(remNodes)-i-1)
+		nextSetFirstPart := make([]ChangingResource, i)
+		nextSetSecondPart := make([]ChangingResource, len(remNodes)-i-1)
 		copy(nextSetFirstPart, remNodes[:i])
 		copy(nextSetSecondPart, remNodes[i+1:])
 		nextSet := append(nextSetFirstPart, nextSetSecondPart...)

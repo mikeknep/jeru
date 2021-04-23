@@ -7,46 +7,44 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type testNode struct {
-	Action string
-	Type   string
-	Name   string
-}
-
-func (n testNode) GetAction() string {
-	return n.Action
-}
-func (n testNode) GetAddress() string {
-	return fmt.Sprintf("%s.%s.%s", n.Action, n.Name, n.Type)
-}
-func (n testNode) GetType() string {
-	return n.Type
+func testNode(action string, resourceType string, name string) ChangingResource {
+	return ChangingResource{
+		Address: fmt.Sprintf("%s.%s.%s", action, resourceType, name),
+		Change: Change{
+			Actions: []string{action},
+			After:   nil,
+			Before:  nil,
+		},
+		Name:         name,
+		ProviderName: "test",
+		Type:         resourceType,
+	}
 }
 
 var (
-	createBucket1 = testNode{Action: "create", Type: "bucket", Name: "bucketOne"}
-	deleteBucket1 = testNode{Action: "delete", Type: "bucket", Name: "bucketOne"}
+	createBucket1 = testNode("create", "bucket", "bucketOne")
+	deleteBucket1 = testNode("delete", "bucket", "bucketOne")
 
-	createBucket2 = testNode{Action: "create", Type: "bucket", Name: "bucketTwo"}
-	deleteBucket2 = testNode{Action: "delete", Type: "bucket", Name: "bucketTwo"}
+	createBucket2 = testNode("create", "bucket", "bucketTwo")
+	deleteBucket2 = testNode("delete", "bucket", "bucketTwo")
 
-	createDatabase1 = testNode{Action: "create", Type: "database", Name: "dbOne"}
-	deleteDatabase1 = testNode{Action: "delete", Type: "database", Name: "dbOne"}
+	createDatabase1 = testNode("create", "database", "dbOne")
+	deleteDatabase1 = testNode("delete", "database", "dbOne")
 
-	createDatabase2 = testNode{Action: "create", Type: "database", Name: "dbTwo"}
-	deleteDatabase2 = testNode{Action: "delete", Type: "database", Name: "dbTwo"}
+	createDatabase2 = testNode("create", "database", "dbTwo")
+	deleteDatabase2 = testNode("delete", "database", "dbTwo")
 
-	createInstance = testNode{Action: "create", Type: "instance", Name: "instanceOne"}
-	deleteInstance = testNode{Action: "delete", Type: "instance", Name: "instanceOne"}
+	createInstance = testNode("create", "instance", "instanceOne")
+	deleteInstance = testNode("delete", "instance", "instanceOne")
 )
 
 func TestGraphs(t *testing.T) {
 	tests := map[string]struct {
-		nodes        []Node
+		nodes        []ChangingResource
 		expectedSets [][]Edge
 	}{
 		"Simplest case: a single pair": {
-			nodes: []Node{
+			nodes: []ChangingResource{
 				createBucket1,
 				deleteBucket1,
 			},
@@ -58,7 +56,7 @@ func TestGraphs(t *testing.T) {
 		},
 
 		"Simple odd number": {
-			nodes: []Node{
+			nodes: []ChangingResource{
 				createBucket1,
 				deleteBucket1,
 				createBucket2,
@@ -74,7 +72,7 @@ func TestGraphs(t *testing.T) {
 		},
 
 		"Two pairs of different types": {
-			nodes: []Node{
+			nodes: []ChangingResource{
 				createBucket1,
 				deleteBucket1,
 				createDatabase1,
@@ -89,7 +87,7 @@ func TestGraphs(t *testing.T) {
 		},
 
 		"Two pairs of same type": {
-			nodes: []Node{
+			nodes: []ChangingResource{
 				createBucket1,
 				deleteBucket1,
 				createBucket2,
@@ -110,7 +108,7 @@ func TestGraphs(t *testing.T) {
 		},
 
 		"Larger odd number": {
-			nodes: []Node{
+			nodes: []ChangingResource{
 				createBucket1,
 				deleteBucket1,
 				createInstance,
@@ -130,7 +128,7 @@ func TestGraphs(t *testing.T) {
 		},
 
 		"Larger odd number different order": {
-			nodes: []Node{
+			nodes: []ChangingResource{
 				createInstance,
 				createBucket1,
 				deleteBucket1,
@@ -150,7 +148,7 @@ func TestGraphs(t *testing.T) {
 		},
 
 		"Complex": {
-			nodes: []Node{
+			nodes: []ChangingResource{
 				createBucket1,
 				deleteBucket1,
 				createBucket2,
@@ -203,7 +201,7 @@ func TestGraphs(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			// first, sanity check that test setup is valid
 			for _, set := range tc.expectedSets {
-				require.True(t, isValidSet(set))
+				require.True(t, isValidSet(set), "Test setup is incorrect (includes invalid set)")
 			}
 
 			// then execute the test
