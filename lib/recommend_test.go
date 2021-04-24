@@ -29,13 +29,19 @@ func (mrw MockReadWriter) Read(b []byte) (int, error) {
 	return mrw.reader.Read(b)
 }
 
+type MockRefactorFinder struct{}
+
+func (f MockRefactorFinder) Find(_ TfPlan) ([]Refactor, error) {
+	return nil, nil
+}
+
 func TestRecommendRunsTerraformPlanAndShowCommands(t *testing.T) {
 	planfile := CreateNamedStringbuilder(planfileName)
 	jsonPlan := NewMockReadWriter(bytes.NewReader([]byte("{}")))
 	screen := ioutil.Discard
 	var void strings.Builder
 
-	Recommend(planfile, jsonPlan, screen, &void, spyPlanExecute, BestEffortRefactorFinder, []string{})
+	Recommend(planfile, jsonPlan, screen, &void, spyPlanExecute, MockRefactorFinder{}, []string{})
 
 	expectedVoid := "terraform plan -out planfile\n"
 	require.Equal(t, expectedVoid, void.String())

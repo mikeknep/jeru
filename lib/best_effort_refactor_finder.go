@@ -1,6 +1,8 @@
 package lib
 
-func BestEffortRefactorFinder(plan TfPlan) ([]Refactor, error) {
+type BestEffortRefactorFinder struct{}
+
+func (_ BestEffortRefactorFinder) Find(plan TfPlan) ([]Refactor, error) {
 	candidates := plan.MvCandidates()
 	candidatePointers := make([]*ChangingResource, len(candidates))
 	for i := range candidates {

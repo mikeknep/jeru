@@ -143,7 +143,7 @@ func TestBestEffortRefactorFinder(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			tfPlan := TfPlan{tc.changes}
-			got, _ := BestEffortRefactorFinder(tfPlan)
+			got, _ := BestEffortRefactorFinder{}.Find(tfPlan)
 			assert.Equal(t, tc.expected, got)
 		})
 	}

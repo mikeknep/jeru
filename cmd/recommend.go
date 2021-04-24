@@ -35,7 +35,7 @@ var recommendCmd = &cobra.Command{
 			additionalPlanArgs = args[1:]
 		}
 
-		return lib.Recommend(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, lib.BestEffortRefactorFinder, additionalPlanArgs)
+		return lib.Recommend(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, lib.BestEffortRefactorFinder{}, additionalPlanArgs)
 	},
 }
 

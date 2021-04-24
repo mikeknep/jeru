@@ -5,7 +5,9 @@ import (
 	"io"
 )
 
-type RefactorFinder func(TfPlan) ([]Refactor, error)
+type RefactorFinder interface {
+	Find(TfPlan) ([]Refactor, error)
+}
 
 func Recommend(
 	planfile NamedWriter,
@@ -13,7 +15,7 @@ func Recommend(
 	screen io.Writer,
 	void io.Writer,
 	execute func(io.Writer, string, ...string) error,
-	getRefactors RefactorFinder,
+	finder RefactorFinder,
 	additionalPlanArgs []string,
 ) error {
 	planArgs := []string{"plan", "-out", planfile.Name()}
@@ -33,7 +35,7 @@ func Recommend(
 		return err
 	}
 
-	refactors, err := getRefactors(tfPlan)
+	refactors, err := finder.Find(tfPlan)
 	if err != nil {
 		return err
 	}
