@@ -13,10 +13,6 @@ type Edge struct {
 }
 
 func (e Edge) isValid() bool {
-	if e.a == nil || e.b == nil {
-		return true
-	}
-
 	sameType := e.a.GetType() == e.b.GetType()
 	differentActions := e.a.GetAction() != e.b.GetAction()
 
@@ -51,27 +47,19 @@ func validEdgeCombinationsFor(nodes []*ChangingResource) [][]Edge {
 	if len(nodes)%2 != 0 {
 		nodes = append(nodes, nil)
 	}
-	results := find(nodes, []Edge{})
-	for i, setOfEdges := range results {
-		for j, edge := range setOfEdges {
-			if edge.a == nil || edge.b == nil {
-				setWithoutNilFirstPart := make([]Edge, j)
-				setWithoutNilSecondPart := make([]Edge, len(setOfEdges)-j-1)
-				copy(setWithoutNilFirstPart, setOfEdges[:j])
-				copy(setWithoutNilSecondPart, setOfEdges[j+1:])
-				setWithoutNilEdge := append(setWithoutNilFirstPart, setWithoutNilSecondPart...)
-				results[i] = setWithoutNilEdge
-			}
-		}
-	}
-
-	return results
+	return find(nodes, []Edge{})
 }
 
 func find(nodes []*ChangingResource, current []Edge) (results [][]Edge) {
 	if len(nodes) < 2 {
 		if isValidSet(current) {
-			results = append(results, current)
+			lockedCurrent := make([]Edge, len(current))
+			for i := range current {
+				nA := *current[i].a
+				nB := *current[i].b
+				lockedCurrent[i] = createEdge(&nA, &nB)
+			}
+			results = append(results, lockedCurrent)
 		}
 		return
 	}
@@ -87,7 +75,11 @@ func find(nodes []*ChangingResource, current []Edge) (results [][]Edge) {
 		edge := createEdge(nodeA, nodeB) // ...and create an Edge
 
 		// add the Edge to the set we're currently building
-		current = append(current, edge)
+		appended := false
+		if nodeA != nil && nodeB != nil {
+			current = append(current, edge)
+			appended = true
+		}
 
 		// remove the plucked nodeB from remNodes
 		// by copying all nodes up to that node,
@@ -103,7 +95,9 @@ func find(nodes []*ChangingResource, current []Edge) (results [][]Edge) {
 		results = append(results, find(nextSet, current)...)
 
 		// clear out the current collection as we bubble up out of recursion
-		current = current[:len(current)-1]
+		if appended {
+			current = current[:len(current)-1]
+		}
 	}
 	return
 }
