@@ -33,11 +33,11 @@ func (p SurveyPrompt) Select(options []string, msg string) (string, error) {
 
 var interactive bool
 
-var recommendCmd = &cobra.Command{
-	Use:   "recommend",
-	Short: "Analyze plan output and recommend state mv changes",
+var findCmd = &cobra.Command{
+	Use:   "find",
+	Short: "Analyze plan output and find state mv changes",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		planfile, err := os.Create(".jeru-recommend.tfplan")
+		planfile, err := os.Create(".jeru-find.tfplan")
 		if err != nil {
 			return err
 		}
@@ -64,11 +64,11 @@ var recommendCmd = &cobra.Command{
 			finder = lib.BestEffortRefactorFinder{}
 		}
 
-		return lib.Recommend(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, finder, additionalPlanArgs)
+		return lib.Find(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, finder, additionalPlanArgs)
 	},
 }
 
 func init() {
-	recommendCmd.Flags().BoolVar(&interactive, "i", false, "Interactive mode")
-	rootCmd.AddCommand(recommendCmd)
+	findCmd.Flags().BoolVar(&interactive, "i", false, "Interactive mode")
+	rootCmd.AddCommand(findCmd)
 }

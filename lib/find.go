@@ -9,7 +9,7 @@ type RefactorFinder interface {
 	Find(TfPlan) ([]Refactor, error)
 }
 
-func Recommend(
+func Find(
 	planfile NamedWriter,
 	jsonPlan io.ReadWriter,
 	screen io.Writer,
