@@ -3,24 +3,36 @@ package lib
 type BestEffortRefactorFinder struct{}
 
 func (_ BestEffortRefactorFinder) Find(plan TfPlan) ([]Refactor, error) {
-	candidates := plan.MvCandidates()
-	candidatePointers := make([]*ChangingResource, len(candidates))
-	for i := range candidates {
-		candidatePointers[i] = &candidates[i]
+	groupedCandidates := make(map[string][]ChangingResource)
+	for _, candidate := range plan.MvCandidates() {
+		group := groupedCandidates[candidate.Type]
+		group = append(group, candidate)
+		groupedCandidates[candidate.Type] = group
 	}
-	validSets := validEdgeCombinationsFor(candidatePointers)
 
-	var bestSet []Refactor
-	var bestScore float64
-	for _, set := range validSets {
-		score := cumulativeScore(set)
-		if score > bestScore {
-			bestSet = asRefactors(set)
-			bestScore = score
+	var completeSet []Refactor
+
+	for _, group := range groupedCandidates {
+		groupAsPointers := make([]*ChangingResource, len(group))
+		for i := range group {
+			groupAsPointers[i] = &group[i]
 		}
+		validSets := validEdgeCombinationsFor(groupAsPointers)
+
+		var bestSet []Refactor
+		var bestScore float64
+		for _, set := range validSets {
+			score := cumulativeScore(set)
+			if score > bestScore {
+				bestSet = asRefactors(set)
+				bestScore = score
+			}
+		}
+
+		completeSet = append(completeSet, bestSet...)
 	}
 
-	return bestSet, nil
+	return completeSet, nil
 }
 
 func asRefactors(set []Edge) []Refactor {
