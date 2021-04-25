@@ -71,10 +71,45 @@ func (c Candidates) Add(r ChangingResource) Candidates {
 	}
 }
 
+func (c Candidates) Remove(address string) Candidates {
+	var newCreating []ChangingResource
+	var newDeleting []ChangingResource
+
+	for _, r := range c.Creating {
+		if r.GetAddress() != address {
+			newCreating = append(newCreating, r)
+		}
+	}
+
+	for _, r := range c.Deleting {
+		if r.GetAddress() != address {
+			newDeleting = append(newDeleting, r)
+		}
+	}
+
+	return Candidates{Creating: newCreating, Deleting: newDeleting}
+}
+
 func (c Candidates) All() []ChangingResource {
 	all := c.Creating
 	all = append(all, c.Deleting...)
 	return all
+}
+
+func (c Candidates) NewAddresses() []string {
+	var addrs []string
+	for _, r := range c.Creating {
+		addrs = append(addrs, r.GetAddress())
+	}
+	return addrs
+}
+
+func (c Candidates) OldAddresses() []string {
+	var addrs []string
+	for _, r := range c.Deleting {
+		addrs = append(addrs, r.GetAddress())
+	}
+	return addrs
 }
 
 type ChangingResource struct {
