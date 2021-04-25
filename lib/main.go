@@ -25,18 +25,56 @@ type TfPlan struct {
 	ChangingResources []ChangingResource `json:"resource_changes"`
 }
 
-func (p TfPlan) MvCandidates() []ChangingResource {
-	var movable []ChangingResource
+func CandidatesByResourceType(plan TfPlan) map[string]Candidates {
+	candidatesByType := make(map[string]Candidates)
 
-	// "replace" actions are represented as either ["delete", "create"] or ["create", "delete"]
-	// These changes cannot be avoided with terraform state mv
-	for _, cr := range p.ChangingResources {
-		if len(cr.Change.Actions) == 1 && cr.Change.Actions[0] != "no-op" {
-			movable = append(movable, cr)
+	for _, r := range plan.ChangingResources {
+		// "replace" actions are represented as either ["delete", "create"] or ["create", "delete"], and cannot be avoided with terraform state mv
+		if len(r.Change.Actions) != 1 {
+			continue
+		}
+
+		resourceType := r.GetType()
+		candidates := candidatesByType[resourceType]
+		updatedCandidates := candidates.Add(r)
+		candidatesByType[resourceType] = updatedCandidates
+	}
+
+	// There must be at least one resource in both "creating" and "deleting"
+	for t, candidates := range candidatesByType {
+		if len(candidates.Creating) == 0 || len(candidates.Deleting) == 0 {
+			delete(candidatesByType, t)
 		}
 	}
 
-	return movable
+	return candidatesByType
+}
+
+type Candidates struct {
+	Creating []ChangingResource
+	Deleting []ChangingResource
+}
+
+func (c Candidates) Add(r ChangingResource) Candidates {
+	// "replace" actions are represented as either ["delete", "create"] or ["create", "delete"], and cannot be avoided with terraform state mv
+	if len(r.Change.Actions) != 1 {
+		return c
+	}
+
+	switch r.Change.Actions[0] {
+	case "create":
+		return Candidates{Creating: append(c.Creating, r), Deleting: c.Deleting}
+	case "delete":
+		return Candidates{Creating: c.Creating, Deleting: append(c.Deleting, r)}
+	default:
+		return c
+	}
+}
+
+func (c Candidates) All() []ChangingResource {
+	all := c.Creating
+	all = append(all, c.Deleting...)
+	return all
 }
 
 type ChangingResource struct {
