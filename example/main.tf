@@ -1,16 +1,7 @@
 terraform {
-  required_providers {
-    local = {
-      version = "2.0.0"
-    }
-  }
-
-  required_version = "0.14.3"
+  required_version = "0.15.0"
 }
 
-// Change this resource name from "main" to "test" to simulate a refactor that
-// requires `terraform state mv` to avoid destroying and recreating the file
-resource "local_file" "test" {
-  content  = "example"
-  filename = "${path.module}/example"
+module "original" {
+  source = "./modules"
 }
