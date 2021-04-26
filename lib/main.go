@@ -18,7 +18,7 @@ type Refactor struct {
 }
 
 func (r Refactor) AsCommand() string {
-	return fmt.Sprintf("terraform state mv %s %s", r.OldAddress, r.NewAddress)
+	return fmt.Sprintf("terraform state mv %q %q", r.OldAddress, r.NewAddress)
 }
 
 type TfPlan struct {

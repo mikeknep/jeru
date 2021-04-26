@@ -76,5 +76,14 @@ func TestFormatsRefactorAsTerraformCommand(t *testing.T) {
 		OldAddress: "old",
 	}
 
-	require.Equal(t, "terraform state mv old new", r.AsCommand())
+	require.Equal(t, `terraform state mv "old" "new"`, r.AsCommand())
+}
+
+func TestFormatsRefactorAsTerraformCommandWithQuotes(t *testing.T) {
+	r := Refactor{
+		NewAddress: `module.repos["1"]`,
+		OldAddress: `module.repositories["1"]`,
+	}
+
+	require.Equal(t, `terraform state mv "module.repositories[\"1\"]" "module.repos[\"1\"]"`, r.AsCommand())
 }
