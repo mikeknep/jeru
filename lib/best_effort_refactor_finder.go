@@ -1,5 +1,7 @@
 package lib
 
+import "reflect"
+
 type BestEffortRefactorFinder struct{}
 
 func (_ BestEffortRefactorFinder) Find(plan TfPlan) ([]Refactor, error) {
@@ -54,7 +56,7 @@ func getScore(a, b ChangingResource) float64 {
 
 	for k, v := range *a.Change.After {
 		before := *b.Change.Before
-		if before[k] == v {
+		if reflect.DeepEqual(before[k], v) {
 			numerator = numerator + 1
 		}
 		denominator = denominator + 1
