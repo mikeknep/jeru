@@ -53,8 +53,8 @@ var findCmd = &cobra.Command{
 		}
 
 		additionalPlanArgs := []string{}
-		if len(args) > 1 {
-			additionalPlanArgs = args[1:]
+		if len(args) > 0 {
+			additionalPlanArgs = args[0:]
 		}
 
 		var finder lib.RefactorFinder
