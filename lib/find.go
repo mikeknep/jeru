@@ -14,13 +14,18 @@ func Find(
 	jsonPlan io.ReadWriter,
 	screen io.Writer,
 	void io.Writer,
+	startSpinner StartSpinner,
 	execute func(io.Writer, string, ...string) error,
 	finder RefactorFinder,
 	additionalPlanArgs []string,
 ) error {
 	planArgs := []string{"plan", "-out", planfile.Name()}
 	planArgs = append(planArgs, additionalPlanArgs...)
-	err := execute(void, "terraform", planArgs...)
+	spinner, err := startSpinner("Running latest plan...")
+	if err != nil {
+		return err
+	}
+	err = execute(void, "terraform", planArgs...)
 	if err != nil {
 		return err
 	}
@@ -35,10 +40,13 @@ func Find(
 		return err
 	}
 
+	spinner.UpdateText("Finding best refactor commands...")
 	refactors, err := finder.Find(tfPlan)
 	if err != nil {
 		return err
 	}
+
+	spinner.Success("Complete!")
 	for _, refactor := range refactors {
 		fmt.Fprintln(screen, refactor.AsCommand())
 	}

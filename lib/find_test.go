@@ -41,7 +41,7 @@ func TestFindRunsTerraformPlanAndShowCommands(t *testing.T) {
 	screen := ioutil.Discard
 	var void strings.Builder
 
-	Find(planfile, jsonPlan, screen, &void, spyPlanExecute, MockRefactorFinder{}, []string{})
+	Find(planfile, jsonPlan, screen, &void, StartSilentSpinner, spyPlanExecute, MockRefactorFinder{}, []string{})
 
 	expectedVoid := "terraform plan -out planfile\n"
 	require.Equal(t, expectedVoid, void.String())

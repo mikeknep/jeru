@@ -57,14 +57,26 @@ var findCmd = &cobra.Command{
 			additionalPlanArgs = args[0:]
 		}
 
+		var startSpinner lib.StartSpinner
 		var finder lib.RefactorFinder
 		if interactive {
+			startSpinner = lib.StartSilentSpinner
 			finder = lib.GuidedRefactorFinder{Prompt: SurveyPrompt{}}
 		} else {
+			startSpinner = lib.StartPtermSpinner
 			finder = lib.BestEffortRefactorFinder{}
 		}
 
-		return lib.Find(planfile, &jsonPlan, os.Stdout, ioutil.Discard, execute, finder, additionalPlanArgs)
+		return lib.Find(
+			planfile,
+			&jsonPlan,
+			os.Stdout,
+			ioutil.Discard,
+			startSpinner,
+			execute,
+			finder,
+			additionalPlanArgs,
+		)
 	},
 }
 
