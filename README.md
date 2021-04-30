@@ -24,14 +24,6 @@ In interactive mode (`--i`), `find` will walk you through the plan, providing th
 Jeru's `plan` command provides a safe way to preview how `terraform plan` would be affected by moving resources in state.
 Jeru makes a copy of the current state, applies your proposed/WIP `state` commands to that copy, and finally runs `terraform plan` against that (now-mutated) copy.
 
-### Rolling back state changes
-
-Even when you plan, mistakes happen.
-In case you only considered the happy path, Jeru's `rollback` command generates the inverse for as many commands as it can:
-- `state mv resource.a resource.b  =>  state mv resource.b resource.a` (restore the original resource address)
-- `import resource.a identifier  =>  state rm resource.a` (remove the imported resource from state)
-- `rm resource.a  =>  :(` (alas, since resources are imported with such specific identifiers that are not always stored in state, Jeru does not attempt to roll back removals)
-
 
 ## Examples
 
@@ -55,15 +47,6 @@ If we ran the `state` commands in `move.sh`, a subsequent re-run of `terraform p
 Before changing the actual state, though, Jeru can safely test these changes in advance:
 ```sh
 ../out/jeru plan ./move.sh
-```
-
-OK, let's run `./move.sh`.
-Sure enough, a subsequent `terraform plan` now reports no changes to make... but maybe we don't like that name after all and want to keep the module named `"original"`.
-We can change the address back in `main.tf` easily enough (perhaps via `git restore|revert`) and repeat the process above to create a new script of `state mv` commands to run,
-or we could have Jeru reverse the changes we just made for us.
-Jeru generates and executes a rollback script based on the original change script:
-```sh
-../out/jeru rollback ./move.sh
 ```
 
 
