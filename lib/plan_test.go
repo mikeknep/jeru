@@ -2,27 +2,13 @@ package lib
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	localStateName = "local.tfstate"
-
-	noOpExecute = func(io.Writer, string, ...string) error { return nil }
-
-	noExtraArgs = []string{}
-)
-
-func spyPlanExecute(executedCommands io.Writer, command string, args ...string) error {
-	fullCommand := command + " " + strings.Join(args, " ") + "\n"
-	executedCommands.Write([]byte(fullCommand))
-	return nil
-}
+var localStateName = "local.tfstate"
 
 func TestPlanCmd(t *testing.T) {
 	changes := strings.NewReader(mv + "\n" + rm)
@@ -30,20 +16,11 @@ func TestPlanCmd(t *testing.T) {
 	var screen strings.Builder
 	var void strings.Builder
 
-	Plan(
-		changes,
-		localState,
-		&screen,
-		&void,
-		approve,
-		spyPlanExecute,
-		noExtraArgs,
-	)
+	runtime := MockRuntimeEnvironment(CaptureScreenTo(&screen), CaptureVoidTo(&void))
+
+	Plan(runtime, changes, localState)
 
 	expectedScreen := fmt.Sprintf(`%s
-terraform init
-bash -c terraform state mv -state=local.tfstate module.a module.b
-bash -c terraform state rm -state=local.tfstate resource.a
 terraform plan -state local.tfstate
 %s
 `, commentOutBackendText, reminderText)
@@ -52,7 +29,12 @@ terraform plan -state local.tfstate
 	expectedLocalState := "terraform state pull\n"
 	require.Equal(t, expectedLocalState, localState.String())
 
-	expectedVoid := "rm -rf .terraform\nrm -rf .terraform\n"
+	expectedVoid := `rm -rf .terraform
+terraform init
+bash -c terraform state mv -state=local.tfstate module.a module.b
+bash -c terraform state rm -state=local.tfstate resource.a
+rm -rf .terraform
+`
 	require.Equal(t, expectedVoid, void.String())
 }
 
@@ -62,15 +44,9 @@ func TestEndsIfUserDoesNotConfirmComentingOutBackend(t *testing.T) {
 	var screen strings.Builder
 	var void strings.Builder
 
-	Plan(
-		changes,
-		localState,
-		&screen,
-		&void,
-		unapprove,
-		spyPlanExecute,
-		noExtraArgs,
-	)
+	runtime := MockRuntimeEnvironment(CaptureScreenTo(&screen), CaptureVoidTo(&void), Unapprove)
+
+	Plan(runtime, changes, localState)
 
 	expectedScreen := fmt.Sprintln(commentOutBackendText)
 	require.Equal(t, expectedScreen, screen.String())
@@ -85,17 +61,10 @@ func TestAppendsExtraArgumentsToFinalPlan(t *testing.T) {
 	changes := strings.NewReader(mv + "\n" + rm)
 	localState := CreateNamedStringbuilder(localStateName)
 	var screen strings.Builder
-	void := ioutil.Discard
 
-	Plan(
-		changes,
-		localState,
-		&screen,
-		void,
-		approve,
-		spyPlanExecute,
-		[]string{"-var-file", "dev.tfvars"},
-	)
+	runtime := MockRuntimeEnvironment(CaptureScreenTo(&screen), WithArgs("-var-file", "dev.tfvars"))
+
+	Plan(runtime, changes, localState)
 
 	planWithExtraArgs := "terraform plan -state local.tfstate -var-file dev.tfvars"
 	require.Contains(t, screen.String(), planWithExtraArgs)

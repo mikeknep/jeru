@@ -2,11 +2,6 @@ package lib
 
 import "fmt"
 
-type Prompt interface {
-	Confirm(string) (bool, error)
-	Select([]string, string) (string, error)
-}
-
 type GuidedRefactorFinder struct {
 	Prompt Prompt
 }

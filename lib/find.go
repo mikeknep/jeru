@@ -1,54 +1,63 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 )
 
 type RefactorFinder interface {
 	Find(TfPlan) ([]Refactor, error)
 }
 
+type FindFlags struct {
+	InteractiveMode bool
+}
+
 func Find(
+	runtime RuntimeEnvironment,
+	findFlags FindFlags,
 	planfile NamedWriter,
-	jsonPlan io.ReadWriter,
-	screen io.Writer,
-	void io.Writer,
-	startSpinner StartSpinner,
-	execute func(io.Writer, string, ...string) error,
-	finder RefactorFinder,
-	additionalPlanArgs []string,
 ) error {
 	planArgs := []string{"plan", "-out", planfile.Name()}
-	planArgs = append(planArgs, additionalPlanArgs...)
-	spinner, err := startSpinner("Running latest plan...")
+	planArgs = append(planArgs, runtime.ExtraArgs...)
+	spinner, err := runtime.StartSpinner("Running latest plan...")
 	if err != nil {
 		return err
 	}
-	err = execute(void, "terraform", planArgs...)
-	if err != nil {
-		return err
-	}
-
-	err = execute(jsonPlan, "terraform", "show", "-json", planfile.Name())
+	err = runtime.Execute(runtime.Void, "terraform", planArgs...)
 	if err != nil {
 		return err
 	}
 
-	tfPlan, err := NewTfPlan(jsonPlan)
+	var jsonPlan bytes.Buffer
+
+	err = runtime.Execute(&jsonPlan, "terraform", "show", "-json", planfile.Name())
 	if err != nil {
 		return err
 	}
 
-	spinner.UpdateText("Finding best refactor commands...")
+	tfPlan, err := NewTfPlan(&jsonPlan)
+	if err != nil {
+		return err
+	}
+
+	var finder RefactorFinder
+	if findFlags.InteractiveMode {
+		finder = GuidedRefactorFinder{Prompt: runtime.Prompt}
+		spinner.Stop()
+	} else {
+		finder = BestEffortRefactorFinder{}
+		spinner.UpdateText("Finding best refactor commands...")
+	}
+
 	refactors, err := finder.Find(tfPlan)
 	if err != nil {
 		return err
 	}
 
-	spinner.Success("Complete!")
+	spinner.Stop()
 	for _, refactor := range refactors {
-		fmt.Fprintln(screen, refactor.AsCommand())
+		fmt.Fprintln(runtime.Screen, refactor.AsCommand())
 	}
 
 	return nil
