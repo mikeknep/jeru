@@ -1,16 +1,10 @@
 package lib
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
 )
-
-type NamedWriter interface {
-	io.Writer
-	Name() string
-}
 
 type Refactor struct {
 	NewAddress string
@@ -140,12 +134,4 @@ func NewTfPlan(r io.Reader) (TfPlan, error) {
 	var tfPlan TfPlan
 	err := json.NewDecoder(r).Decode(&tfPlan)
 	return tfPlan, err
-}
-
-func ConsumeByLine(reader io.Reader, f func(string)) error {
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		f(scanner.Text())
-	}
-	return scanner.Err()
 }
