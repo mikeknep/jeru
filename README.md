@@ -38,7 +38,7 @@ First, Jeru can suggest some commands to run that may help:
 ../out/jeru find
 ```
 You can also step through this resource-by-resource by adding the `--i` flag.
-Let's write this to a file for use with the other commands:
+Let's write this to a file for use with the next command:
 ```sh
 ../out/jeru find > ./move.sh
 ```
