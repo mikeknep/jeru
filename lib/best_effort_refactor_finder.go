@@ -7,28 +7,39 @@ type BestEffortRefactorFinder struct{}
 func (_ BestEffortRefactorFinder) Find(plan TfPlan) ([]Refactor, error) {
 	var completeSet []Refactor
 
-	for _, candidates := range CandidatesByResourceType(plan) {
-		resources := candidates.All()
-		resourcePointers := make([]*ChangingResource, len(resources))
-		for i := range resources {
-			resourcePointers[i] = &resources[i]
-		}
-		validSets := validEdgeCombinationsFor(resourcePointers)
+	candidateGroups := CandidatesByResourceType(plan)
+	channel := make(chan []Refactor, len(candidateGroups))
 
-		var bestSet []Refactor
-		var bestScore float64
-		for _, set := range validSets {
-			score := cumulativeScore(set)
-			if score > bestScore {
-				bestSet = asRefactors(set)
-				bestScore = score
-			}
-		}
+	for _, candidates := range candidateGroups {
+		go findBestRefactorsForCandidates(candidates, channel)
+	}
 
+	for i := 0; i < len(candidateGroups); i++ {
+		bestSet := <-channel
 		completeSet = append(completeSet, bestSet...)
 	}
 
 	return completeSet, nil
+}
+
+func findBestRefactorsForCandidates(candidates Candidates, channel chan []Refactor) {
+	resources := candidates.All()
+	resourcePointers := make([]*ChangingResource, len(resources))
+	for i := range resources {
+		resourcePointers[i] = &resources[i]
+	}
+	validSets := validEdgeCombinationsFor(resourcePointers)
+
+	var bestSet []Refactor
+	var bestScore float64
+	for _, set := range validSets {
+		score := cumulativeScore(set)
+		if score > bestScore {
+			bestSet = asRefactors(set)
+			bestScore = score
+		}
+	}
+	channel <- bestSet
 }
 
 func asRefactors(set []Edge) []Refactor {
