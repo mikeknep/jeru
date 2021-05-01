@@ -3,5 +3,5 @@ terraform {
 }
 
 module "original" {
-  source = "./modules"
+  source = "./demo"
 }
