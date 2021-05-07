@@ -1,5 +1,9 @@
 package lib
 
+import (
+	"sync"
+)
+
 func createEdge(x, y *ChangingResource) Edge {
 	if x.GetAction() == "create" {
 		return Edge{a: x, b: y}
@@ -47,57 +51,55 @@ func validEdgeCombinationsFor(nodes []*ChangingResource) [][]Edge {
 	if len(nodes)%2 != 0 {
 		nodes = append(nodes, nil)
 	}
-	return find(nodes, []Edge{})
+	channel := make(chan []Edge)
+	waitGroup := &sync.WaitGroup{}
+	waitGroup.Add(1)
+	go func() {
+		waitGroup.Wait()
+		close(channel)
+	}()
+
+	find(nodes, []Edge{}, channel, waitGroup)
+
+	var results [][]Edge
+	for edgeSet := range channel {
+		results = append(results, edgeSet)
+	}
+	return results
 }
 
-func find(nodes []*ChangingResource, current []Edge) (results [][]Edge) {
+func find(nodes []*ChangingResource, current []Edge, channel chan []Edge, waitGroup *sync.WaitGroup) {
+	defer waitGroup.Done()
+
 	if len(nodes) < 2 {
 		if isValidSet(current) {
-			lockedCurrent := make([]Edge, len(current))
-			for i := range current {
-				nA := *current[i].a
-				nB := *current[i].b
-				lockedCurrent[i] = createEdge(&nA, &nB)
-			}
-			results = append(results, lockedCurrent)
+			channel <- current
 		}
 		return
 	}
 
-	nodeA := nodes[0] // pluck the first node from the set of nodes
+	nodeA := nodes[0]
 
-	// ensure we don't change the original nodes. slices do not copy!
 	remNodes := make([]*ChangingResource, len(nodes)-1)
 	copy(remNodes, nodes[1:])
 
 	for i := 0; i < len(remNodes); i++ {
-		nodeB := remNodes[i]             // pluck another node from the set of nodes...
-		edge := createEdge(nodeA, nodeB) // ...and create an Edge
+		nodeB := remNodes[i]
 
-		// add the Edge to the set we're currently building
-		appended := false
+		newCurrentCurrent := make([]Edge, len(current))
+		copy(newCurrentCurrent, current)
+
 		if nodeA != nil && nodeB != nil {
-			current = append(current, edge)
-			appended = true
+			newCurrentCurrent = append(newCurrentCurrent, createEdge(nodeA, nodeB))
 		}
 
-		// remove the plucked nodeB from remNodes
-		// by copying all nodes up to that node,
-		// and all nodes after that node,
-		// and stitching those two slices together
 		nextSetFirstPart := make([]*ChangingResource, i)
 		nextSetSecondPart := make([]*ChangingResource, len(remNodes)-i-1)
 		copy(nextSetFirstPart, remNodes[:i])
 		copy(nextSetSecondPart, remNodes[i+1:])
 		nextSet := append(nextSetFirstPart, nextSetSecondPart...)
 
-		// recursively find more edges
-		results = append(results, find(nextSet, current)...)
-
-		// clear out the current collection as we bubble up out of recursion
-		if appended {
-			current = current[:len(current)-1]
-		}
+		waitGroup.Add(1)
+		go find(nextSet, newCurrentCurrent, channel, waitGroup)
 	}
-	return
 }

@@ -206,7 +206,7 @@ func TestGraphs(t *testing.T) {
 
 			// then execute the test
 			computedSets := validEdgeCombinationsFor(tc.nodes)
-			require.Equal(t, tc.expectedSets, computedSets)
+			require.ElementsMatch(t, tc.expectedSets, computedSets)
 		})
 	}
 }
