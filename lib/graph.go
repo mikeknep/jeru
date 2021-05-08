@@ -24,26 +24,11 @@ func (e Edge) isValid() bool {
 }
 
 func isValidSet(set []Edge) bool {
-	var seenNodes []*ChangingResource
-
 	for _, edge := range set {
-		// a set of edges is only valid if all its component edges are valid
 		if !edge.isValid() {
 			return false
 		}
-
-		// a set of edges is only valid if the edges' nodes are unique
-		// aka, each node can only have zero or one edge
-		for _, seenNode := range seenNodes {
-			if seenNode == edge.a || seenNode == edge.b {
-				return false
-			}
-		}
-
-		seenNodes = append(seenNodes, edge.a)
-		seenNodes = append(seenNodes, edge.b)
 	}
-
 	return true
 }
 
