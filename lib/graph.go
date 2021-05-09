@@ -56,6 +56,10 @@ func validEdgeCombinationsFor(nodes []*ChangingResource) [][]Edge {
 func find(nodes []*ChangingResource, current []Edge, channel chan []Edge, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 
+	if !isValidSet(current) {
+		return
+	}
+
 	if len(nodes) < 2 {
 		if isValidSet(current) {
 			channel <- current
