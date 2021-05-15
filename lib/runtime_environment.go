@@ -2,7 +2,6 @@ package lib
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 )
@@ -34,6 +33,6 @@ func CreateLiveRuntimeEnvironment(extraArgs []string) RuntimeEnvironment {
 		Prompt:       SurveyPrompt{},
 		Screen:       os.Stdout,
 		StartSpinner: StartPtermSpinner,
-		Void:         ioutil.Discard,
+		Void:         io.Discard,
 	}
 }

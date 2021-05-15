@@ -2,14 +2,14 @@ package lib
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestParsesJsonToTfPlan(t *testing.T) {
-	jsonPlanContent, _ := ioutil.ReadFile("../fixtures/plan.json")
+	jsonPlanContent, _ := os.ReadFile("../fixtures/plan.json")
 	tfPlan, _ := NewTfPlan(bytes.NewReader(jsonPlanContent))
 
 	expectedTfPlan := TfPlan{[]ChangingResource{

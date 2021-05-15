@@ -2,7 +2,6 @@ package lib
 
 import (
 	"io"
-	"io/ioutil"
 	"strings"
 )
 
@@ -40,9 +39,9 @@ func MockRuntimeEnvironment(options ...func(*RuntimeEnvironment)) RuntimeEnviron
 		ExtraArgs:    []string{},
 		GetApproval:  AutoApprove,
 		Prompt:       MockPrompt{},
-		Screen:       ioutil.Discard,
+		Screen:       io.Discard,
 		StartSpinner: StartSilentSpinner,
-		Void:         ioutil.Discard,
+		Void:         io.Discard,
 	}
 
 	for _, option := range options {
