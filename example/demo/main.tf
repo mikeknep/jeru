@@ -7,7 +7,7 @@ resource "random_string" "main" {
 }
 
 resource "random_password" "letters" {
-  count = 3
+  count = 11
 
   length  = 3 * (count.index + 1)
   lower   = true
@@ -17,7 +17,7 @@ resource "random_password" "letters" {
 }
 
 resource "random_password" "numbers" {
-  count = 3
+  count = 11
 
   length  = 3 * (count.index + 1)
   lower   = false
@@ -27,7 +27,7 @@ resource "random_password" "numbers" {
 }
 
 resource "random_password" "special" {
-  count = 3
+  count = 11
 
   length  = 3 * (count.index + 1)
   lower   = false
