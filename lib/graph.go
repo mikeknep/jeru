@@ -2,6 +2,8 @@ package lib
 
 import (
 	"sync"
+
+	"github.com/panjf2000/ants/v2"
 )
 
 func createEdge(x, y *ChangingResource) Edge {
@@ -89,6 +91,6 @@ func find(nodes []*ChangingResource, current []Edge, channel chan []Edge, waitGr
 		nextSet := append(nextSetFirstPart, nextSetSecondPart...)
 
 		waitGroup.Add(1)
-		go find(nextSet, newCurrentCurrent, channel, waitGroup)
+		ants.Submit(func() { find(nextSet, newCurrentCurrent, channel, waitGroup) })
 	}
 }

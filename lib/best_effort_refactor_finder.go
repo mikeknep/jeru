@@ -1,6 +1,10 @@
 package lib
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/panjf2000/ants/v2"
+)
 
 type BestEffortRefactorFinder struct{}
 
@@ -11,7 +15,7 @@ func (_ BestEffortRefactorFinder) Find(plan TfPlan) ([]Refactor, error) {
 	channel := make(chan []Refactor, len(candidateGroups))
 
 	for _, candidates := range candidateGroups {
-		go findBestRefactorsForCandidates(candidates, channel)
+		ants.Submit(func() { findBestRefactorsForCandidates(candidates, channel) })
 	}
 
 	for i := 0; i < len(candidateGroups); i++ {
